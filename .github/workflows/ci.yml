@@ -20,13 +20,28 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Record submodule commit
+        run: git -C vendor/nim-codex rev-parse HEAD > vendor/nim-codex/.codex-commit
+
+      - name: Cache libcodex build
+        id: cache-libcodex
+        uses: actions/cache@v4
+        with:
+          path: vendor/nim-codex/build
+          key: ${{ runner.os }}-libcodex-${{ hashFiles('vendor/nim-codex/.codex-commit') }}
+
       - name: Build libcodex
+        if: steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake curl git rustc cargo
           make update
           make libcodex
-          go build -o codex-go examples/golang/codex.go
+
+     - name: Build codex go
+        run: |
+          cd codex 
+          go build -o codex-go
 
       - name: Go test
         env:
