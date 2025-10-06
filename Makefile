@@ -18,9 +18,9 @@ libcodex:
 
 build:
 	@echo "Building Codex Go Bindings..."
-	go build ./...
+	go build -o codex-go examples/golang/codex.go
 
 clean:
 	@echo "Cleaning up..."
 	@git submodule deinit -f $(NIM_CODEX_DIR)
-	@rm -f codex-go-bindings
+	@rm -f codex-go
