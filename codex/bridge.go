@@ -4,8 +4,9 @@ package codex
    #cgo LDFLAGS: -L../vendor/nim-codex/build/ -lcodex
    #cgo LDFLAGS: -L../vendor/nim-codex/ -Wl,-rpath,../vendor/nim-codex/build
 
-   #include "../vendor/nim-codex/library/libcodex.h"
    #include <stdlib.h>
+   #include <stdbool.h>
+   #include "../vendor/nim-codex/library/libcodex.h"
 
    typedef struct {
        int ret;
