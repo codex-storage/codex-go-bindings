@@ -39,9 +39,9 @@ jobs:
           make libcodex
 
       - name: Build codex go
-          run: |
-            cd codex
-            go build -o codex-go
+        run: |
+          cd codex
+          go build -o codex-go
 
       - name: Go test
         env:
