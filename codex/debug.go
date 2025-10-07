@@ -11,6 +11,10 @@ package codex
    static int cGoCodexLogLevel(void* codexCtx, char* logLevel, void* resp) {
        return codex_log_level(codexCtx, logLevel, (CodexCallback) callback, resp);
    }
+
+   static int cGoCodexPeerDebug(void* codexCtx, char* peerId, void* resp) {
+       return codex_peer_debug(codexCtx, peerId, (CodexCallback) callback, resp);
+   }
 */
 import "C"
 import (
@@ -37,6 +41,12 @@ type DebugInfo struct {
 	Spr               string       `json:"spr"`   // Signed Peer Record
 	AnnounceAddresses []string     `json:"announceAddresses"`
 	PeersTable        RoutingTable `json:"table"`
+}
+
+type PeerRecord struct {
+	PeerId    string   `json:"peerId"`
+	SeqNo     int      `json:"seqNo"`
+	Addresses []string `json:"addresses,omitempty"`
 }
 
 // Debug retrieves debugging information from the Codex node.
@@ -78,4 +88,27 @@ func (node CodexNode) UpdateLogLevel(logLevel string) error {
 
 	_, err := bridge.wait()
 	return err
+}
+
+func (node CodexNode) CodexPeerDebug(peerId string) (PeerRecord, error) {
+	var record PeerRecord
+
+	bridge := newBridgeCtx()
+	defer bridge.free()
+
+	var cPeerId = C.CString(peerId)
+	defer C.free(unsafe.Pointer(cPeerId))
+
+	if C.cGoCodexPeerDebug(node.ctx, cPeerId, bridge.resp) != C.RET_OK {
+		return record, bridge.callError("cGoCodexPeerDebug")
+	}
+
+	value, err := bridge.wait()
+	if err != nil {
+		return record, err
+	}
+
+	err = json.Unmarshal([]byte(value), &record)
+
+	return record, err
 }

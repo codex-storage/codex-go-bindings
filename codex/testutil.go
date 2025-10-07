@@ -1,11 +1,14 @@
 package codex
 
-import "testing"
+import (
+	"testing"
+)
 
 func newCodexNode(t *testing.T) *CodexNode {
 	node, err := CodexNew(CodexConfig{
-		DataDir:   t.TempDir(),
-		LogFormat: LogFormatNoColors,
+		DataDir:        t.TempDir(),
+		LogFormat:      LogFormatNoColors,
+		MetricsEnabled: false,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create Codex node: %v", err)
