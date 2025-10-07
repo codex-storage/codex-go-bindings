@@ -56,18 +56,6 @@ import (
 	"unsafe"
 )
 
-type LogLevel string
-
-const (
-	Trace  LogLevel = "TRACE"
-	Debug  LogLevel = "DEBUG"
-	Info   LogLevel = "INFO"
-	Notice LogLevel = "NOTICE"
-	Warn   LogLevel = "WARN"
-	Error  LogLevel = "ERROR"
-	Fatal  LogLevel = "FATAL"
-)
-
 type LogFormat string
 
 const (
@@ -165,6 +153,7 @@ func (node CodexNode) StartAsync(onDone func(error)) {
 // Stop stops the Codex node.
 func (node CodexNode) Stop() error {
 	bridge := newBridgeCtx()
+	defer bridge.free()
 
 	if C.cGoCodexStop(node.ctx, bridge.resp) != C.RET_OK {
 		return bridge.callError("cGoCodexStop")
@@ -178,6 +167,7 @@ func (node CodexNode) Stop() error {
 // The node must be stopped before calling this method.
 func (node CodexNode) Destroy() error {
 	bridge := newBridgeCtx()
+	defer bridge.free()
 
 	if C.cGoCodexDestroy(node.ctx, bridge.resp) != C.RET_OK {
 		return bridge.callError("cGoCodexDestroy")

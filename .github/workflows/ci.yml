@@ -20,6 +20,14 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Build libcodex
+        if: steps.cache-libcodex.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake curl git rustc cargo
+          make update
+          make libcodex
+
       - name: Record submodule commit
         run: git -C vendor/nim-codex rev-parse HEAD > vendor/nim-codex/.codex-commit
 
