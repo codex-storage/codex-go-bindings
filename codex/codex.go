@@ -49,6 +49,10 @@ package codex
    static int cGoCodexSpr(void* codexCtx, void* resp) {
        return codex_spr(codexCtx, (CodexCallback) callback, resp);
    }
+
+   static int cGoCodexPeerId(void* codexCtx, void* resp) {
+       return codex_peer_id(codexCtx, (CodexCallback) callback, resp);
+   }
 */
 import "C"
 import (
@@ -73,6 +77,8 @@ const (
 	LevelDb RepoKind = "leveldb"
 )
 
+type rawJSON = json.RawMessage
+
 type CodexConfig struct {
 	LogFormat                      LogFormat `json:"log-format,omitempty"`
 	MetricsEnabled                 bool      `json:"metrics,omitempty"`
@@ -82,7 +88,7 @@ type CodexConfig struct {
 	Nat                            string    `json:"nat,omitempty"`
 	DiscoveryPort                  int       `json:"disc-port,omitempty"`
 	NetPrivKeyFile                 string    `json:"net-privkey,omitempty"`
-	BootstrapNodes                 []byte    `json:"bootstrap-node,omitempty"`
+	BootstrapNodes                 []string  `json:"bootstrap-node,omitempty"`
 	MaxPeers                       int       `json:"max-peers,omitempty"`
 	NumThreads                     int       `json:"num-threads,omitempty"`
 	AgentString                    string    `json:"agent-string,omitempty"`
@@ -107,6 +113,9 @@ type CodexNode struct {
 func CodexNew(config CodexConfig) (*CodexNode, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
+
+	// transform BootstrapNodes into rawJSON
+	// rawJSON(fmt.Sprintf(`["%s"]`, spr))
 
 	jsonConfig, err := json.Marshal(config)
 
@@ -189,7 +198,6 @@ func (node CodexNode) Version() (string, error) {
 	return bridge.wait()
 }
 
-// Revision returns the revision of the Codex node.
 func (node CodexNode) Revision() (string, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
@@ -208,6 +216,28 @@ func (node CodexNode) Repo() (string, error) {
 
 	if C.cGoCodexRepo(node.ctx, bridge.resp) != C.RET_OK {
 		return "", bridge.callError("cGoCodexRepo")
+	}
+
+	return bridge.wait()
+}
+
+func (node CodexNode) Spr() (string, error) {
+	bridge := newBridgeCtx()
+	defer bridge.free()
+
+	if C.cGoCodexSpr(node.ctx, bridge.resp) != C.RET_OK {
+		return "", bridge.callError("cGoCodexSpr")
+	}
+
+	return bridge.wait()
+}
+
+func (node CodexNode) PeerId() (string, error) {
+	bridge := newBridgeCtx()
+	defer bridge.free()
+
+	if C.cGoCodexPeerId(node.ctx, bridge.resp) != C.RET_OK {
+		return "", bridge.callError("cGoCodexPeerId")
 	}
 
 	return bridge.wait()

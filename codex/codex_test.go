@@ -4,8 +4,9 @@ import "testing"
 
 func TestCodexVersion(t *testing.T) {
 	node, err := CodexNew(CodexConfig{
-		DataDir:   t.TempDir(),
-		LogFormat: LogFormatNoColors,
+		DataDir:        t.TempDir(),
+		LogFormat:      LogFormatNoColors,
+		MetricsEnabled: false,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create Codex node: %v", err)
@@ -25,8 +26,9 @@ func TestCodexVersion(t *testing.T) {
 
 func TestCodexRevision(t *testing.T) {
 	node, err := CodexNew(CodexConfig{
-		DataDir:   t.TempDir(),
-		LogFormat: LogFormatNoColors,
+		DataDir:        t.TempDir(),
+		LogFormat:      LogFormatNoColors,
+		MetricsEnabled: false,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create Codex node: %v", err)
@@ -56,4 +58,32 @@ func TestCodexRepo(t *testing.T) {
 	}
 
 	t.Logf("Codex repo: %s", repo)
+}
+
+func TestSpr(t *testing.T) {
+	node := newCodexNode(t)
+
+	spr, err := node.Spr()
+	if err != nil {
+		t.Fatalf("Failed to get Codex SPR: %v", err)
+	}
+	if spr == "" {
+		t.Fatal("Codex SPR is empty")
+	}
+
+	t.Logf("Codex SPR: %s", spr)
+}
+
+func TestPeerId(t *testing.T) {
+	node := newCodexNode(t)
+
+	peerId, err := node.PeerId()
+	if err != nil {
+		t.Fatalf("Failed to get Codex PeerId: %v", err)
+	}
+	if peerId == "" {
+		t.Fatal("Codex PeerId is empty")
+	}
+
+	t.Logf("Codex PeerId: %s", peerId)
 }
