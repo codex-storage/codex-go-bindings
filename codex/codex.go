@@ -77,8 +77,6 @@ const (
 	LevelDb RepoKind = "leveldb"
 )
 
-type rawJSON = json.RawMessage
-
 type CodexConfig struct {
 	LogFormat                      LogFormat `json:"log-format,omitempty"`
 	MetricsEnabled                 bool      `json:"metrics,omitempty"`
