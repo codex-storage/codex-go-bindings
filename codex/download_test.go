@@ -1,28 +1,13 @@
 package codex
 
 import (
-	"bytes"
 	"os"
 	"strings"
 	"testing"
 )
 
-func uploadHelper(t *testing.T, codex *CodexNode) (string, int) {
-	t.Helper()
-
-	buf := bytes.NewBuffer([]byte("Hello World!"))
-	len := buf.Len()
-	cid, err := codex.UploadReader(UploadOptions{filepath: "hello.txt"}, buf)
-	if err != nil {
-		t.Fatalf("Error happened during upload: %v\n", err)
-	}
-
-	return cid, len
-}
-
 func TestDownloadStream(t *testing.T) {
-	start := true
-	codex := newCodexNode(t, start)
+	codex := newCodexNode(t)
 	cid, len := uploadHelper(t, codex)
 
 	f, err := os.Create("testdata/hello.downloaded.txt")
@@ -59,7 +44,7 @@ func TestDownloadStream(t *testing.T) {
 		t.Fatalf("UploadReader progress callback total bytes %d but expected %d", totalBytes, len)
 	}
 
-	data, err := os.ReadFile("testdata/hello.writer.txt")
+	data, err := os.ReadFile("testdata/hello.downloaded.writer.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,8 +55,7 @@ func TestDownloadStream(t *testing.T) {
 }
 
 func TestDownloadStreamWithAutosize(t *testing.T) {
-	start := true
-	codex := newCodexNode(t, start)
+	codex := newCodexNode(t)
 	cid, len := uploadHelper(t, codex)
 
 	totalBytes := 0
@@ -101,9 +85,17 @@ func TestDownloadStreamWithAutosize(t *testing.T) {
 	}
 }
 
+func TestDownloadStreamWithNotExisting(t *testing.T) {
+	codex := newCodexNode(t, withBlockRetries(1))
+
+	opt := DownloadStreamOptions{}
+	if err := codex.DownloadStream("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", opt); err == nil {
+		t.Fatal("Error expected when downloading non-existing cid")
+	}
+}
+
 func TestDownloadManual(t *testing.T) {
-	start := true
-	codex := newCodexNode(t, start)
+	codex := newCodexNode(t)
 	cid, _ := uploadHelper(t, codex)
 
 	if err := codex.DownloadInit(cid, DownloadInitOptions{}); err != nil {
@@ -124,5 +116,40 @@ func TestDownloadManual(t *testing.T) {
 
 	if err := codex.DownloadCancel(cid); err != nil {
 		t.Fatalf("Error when cancelling the download %s", err)
+	}
+}
+
+func TestDownloadManifest(t *testing.T) {
+	codex := newCodexNode(t)
+	cid, _ := uploadHelper(t, codex)
+
+	manifest, err := codex.DownloadManifest(cid)
+	if err != nil {
+		t.Fatal("Error when downloading manifest:", err)
+	}
+
+	if manifest.Cid != cid {
+		t.Errorf("expected cid %q, got %q", cid, manifest.Cid)
+	}
+}
+
+func TestDownloadManifestWithNotExistingCid(t *testing.T) {
+	codex := newCodexNode(t, withBlockRetries(1))
+
+	manifest, err := codex.DownloadManifest("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku")
+	if err == nil {
+		t.Fatal("Error when downloading manifest:", err)
+	}
+
+	if manifest.Cid != "" {
+		t.Errorf("expected empty cid, got %q", manifest.Cid)
+	}
+}
+
+func TestDownloadInitWithNotExistingCid(t *testing.T) {
+	codex := newCodexNode(t, withBlockRetries(1))
+
+	if err := codex.DownloadInit("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", DownloadInitOptions{}); err == nil {
+		t.Fatal("expected error when initializing download for non-existent cid")
 	}
 }

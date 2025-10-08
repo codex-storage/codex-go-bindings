@@ -3,8 +3,7 @@ package codex
 import "testing"
 
 func TestCodexVersion(t *testing.T) {
-	start := false
-	node := newCodexNode(t, start)
+	node := newCodexNode(t, withNoStart())
 
 	version, err := node.Version()
 	if err != nil {
@@ -18,8 +17,7 @@ func TestCodexVersion(t *testing.T) {
 }
 
 func TestCodexRevision(t *testing.T) {
-	start := false
-	node := newCodexNode(t, start)
+	node := newCodexNode(t, withNoStart())
 
 	revision, err := node.Revision()
 	if err != nil {
@@ -33,8 +31,7 @@ func TestCodexRevision(t *testing.T) {
 }
 
 func TestCodexRepo(t *testing.T) {
-	start := true
-	node := newCodexNode(t, start)
+	node := newCodexNode(t)
 
 	repo, err := node.Repo()
 	if err != nil {
@@ -48,8 +45,7 @@ func TestCodexRepo(t *testing.T) {
 }
 
 func TestSpr(t *testing.T) {
-	start := true
-	node := newCodexNode(t, start)
+	node := newCodexNode(t)
 
 	spr, err := node.Spr()
 	if err != nil {
@@ -63,8 +59,7 @@ func TestSpr(t *testing.T) {
 }
 
 func TestPeerId(t *testing.T) {
-	start := true
-	node := newCodexNode(t, start)
+	node := newCodexNode(t)
 
 	peerId, err := node.PeerId()
 	if err != nil {

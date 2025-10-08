@@ -10,8 +10,7 @@ import (
 const expectedCID = "zDvZRwzmAkhzDRPH5EW242gJBNZ2T7aoH2v1fVH66FxXL4kSbvyM"
 
 func TestUploadReader(t *testing.T) {
-	start := true
-	codex := newCodexNode(t, start)
+	codex := newCodexNode(t)
 	totalBytes := 0
 	finalPercent := 0.0
 
@@ -44,8 +43,7 @@ func TestUploadReader(t *testing.T) {
 }
 
 func TestUploadFile(t *testing.T) {
-	start := true
-	codex := newCodexNode(t, start)
+	codex := newCodexNode(t)
 	totalBytes := 0
 	finalPercent := 0.0
 
@@ -82,8 +80,7 @@ func TestUploadFile(t *testing.T) {
 }
 
 func TestUploadFileNoProgress(t *testing.T) {
-	start := true
-	codex := newCodexNode(t, start)
+	codex := newCodexNode(t)
 
 	options := UploadOptions{filepath: "./testdata/doesnt_exist.txt"}
 
@@ -98,8 +95,7 @@ func TestUploadFileNoProgress(t *testing.T) {
 }
 
 func TestManualUpload(t *testing.T) {
-	start := true
-	codex := newCodexNode(t, start)
+	codex := newCodexNode(t)
 
 	sessionId, err := codex.UploadInit(&UploadOptions{filepath: "hello.txt"})
 	if err != nil {

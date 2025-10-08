@@ -1,20 +1,44 @@
 package codex
 
 import (
+	"bytes"
 	"testing"
 )
 
-func newCodexNode(t *testing.T, start bool) *CodexNode {
+type codexNodeTestOption func(*codexNodeTestOptions)
+
+type codexNodeTestOptions struct {
+	noStart      bool
+	blockRetries int
+}
+
+func withNoStart() codexNodeTestOption {
+	return func(o *codexNodeTestOptions) { o.noStart = true }
+}
+
+func withBlockRetries(n int) codexNodeTestOption {
+	return func(o *codexNodeTestOptions) { o.blockRetries = n }
+}
+
+func newCodexNode(t *testing.T, opts ...codexNodeTestOption) *CodexNode {
+	o := codexNodeTestOptions{
+		blockRetries: 3000,
+	}
+	for _, opt := range opts {
+		opt(&o)
+	}
+
 	node, err := CodexNew(CodexConfig{
 		DataDir:        t.TempDir(),
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
+		BlockRetries:   o.blockRetries,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create Codex node: %v", err)
 	}
 
-	if start {
+	if !o.noStart {
 		err = node.Start()
 		if err != nil {
 			t.Fatalf("Failed to start Codex node: %v", err)
@@ -22,7 +46,7 @@ func newCodexNode(t *testing.T, start bool) *CodexNode {
 	}
 
 	t.Cleanup(func() {
-		if start {
+		if !o.noStart {
 			if err := node.Stop(); err != nil {
 				t.Logf("cleanup codex: %v", err)
 			}
@@ -34,4 +58,17 @@ func newCodexNode(t *testing.T, start bool) *CodexNode {
 	})
 
 	return node
+}
+
+func uploadHelper(t *testing.T, codex *CodexNode) (string, int) {
+	t.Helper()
+
+	buf := bytes.NewBuffer([]byte("Hello World!"))
+	len := buf.Len()
+	cid, err := codex.UploadReader(UploadOptions{filepath: "hello.txt"}, buf)
+	if err != nil {
+		t.Fatalf("Error happened during upload: %v\n", err)
+	}
+
+	return cid, len
 }
