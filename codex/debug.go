@@ -36,9 +36,14 @@ type RoutingTable struct {
 }
 
 type DebugInfo struct {
-	ID                string       `json:"id"`    // Peer ID
-	Addrs             []string     `json:"addrs"` // Peer info addresses
-	Spr               string       `json:"spr"`   // Signed Peer Record
+	// Peer ID
+	ID string `json:"id"`
+
+	// Peer info addresses
+	// Specified with `ListenAddresses` in `CodexConfig`
+	Addrs []string `json:"addrs"`
+
+	Spr               string       `json:"spr"`
 	AnnounceAddresses []string     `json:"announceAddresses"`
 	PeersTable        RoutingTable `json:"table"`
 }
@@ -90,6 +95,9 @@ func (node CodexNode) UpdateLogLevel(logLevel string) error {
 	return err
 }
 
+// CodexPeerDebug retrieves the peer record for a given peer ID.
+// This function is available only if the flag
+// -d:codex_enable_api_debug_peers=true was set at build time.
 func (node CodexNode) CodexPeerDebug(peerId string) (PeerRecord, error) {
 	var record PeerRecord
 
@@ -109,6 +117,5 @@ func (node CodexNode) CodexPeerDebug(peerId string) (PeerRecord, error) {
 	}
 
 	err = json.Unmarshal([]byte(value), &record)
-
 	return record, err
 }

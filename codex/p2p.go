@@ -10,10 +10,15 @@ package codex
 */
 import "C"
 import (
-	"log"
 	"unsafe"
 )
 
+// Connect connects to a peer using its peer ID and optional multiaddresses.
+// If `peerAddresses` param is supplied, it will be used to  dial the peer,
+// otherwise the `peerId` is used to invoke peer discovery, if it succeeds
+// the returned addresses will be used to dial.
+// `peerAddresses` the listening addresses of the peers to dial,
+// eg the one specified with `ListenAddresses` in `CodexConfig`.
 func (node CodexNode) Connect(peerId string, peerAddresses []string) error {
 	bridge := newBridgeCtx()
 	defer bridge.free()
@@ -27,8 +32,6 @@ func (node CodexNode) Connect(peerId string, peerAddresses []string) error {
 			cAddresses[i] = C.CString(addr)
 			defer C.free(unsafe.Pointer(cAddresses[i]))
 		}
-
-		log.Println("peerAddresses", cAddresses)
 
 		if C.cGoCodexConnect(node.ctx, cPeerId, &cAddresses[0], C.uintptr_t(len(peerAddresses)), bridge.resp) != C.RET_OK {
 			return bridge.callError("cGoCodexConnect")

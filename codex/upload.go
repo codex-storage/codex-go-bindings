@@ -35,11 +35,11 @@ import (
 
 const defaultBlockSize = 1024 * 64
 
-type OnUploadProgressFunc func(read, total int, percent float64, err error)
+type onUploadProgressFunc func(read, total int, percent float64, err error)
 
-type ChunckSize int
+type chunckSize int
 
-func (c ChunckSize) valOrDefault() int {
+func (c chunckSize) valOrDefault() int {
 	if c == 0 {
 		return defaultBlockSize
 	}
@@ -47,14 +47,32 @@ func (c ChunckSize) valOrDefault() int {
 	return int(c)
 }
 
-func (c ChunckSize) toSizeT() C.size_t {
+func (c chunckSize) toSizeT() C.size_t {
 	return C.size_t(c.valOrDefault())
 }
 
-type CodexUploadOptions struct {
-	filepath   string
-	chunkSize  ChunckSize
-	onProgress OnUploadProgressFunc
+type UploadOptions struct {
+	// filepath can be the full path when using UploadFile
+	// otherwise the file name.
+	// It is used to detect the mimetype.
+	filepath string
+
+	// chunkSize is the size of each upload chunk, passed as `blockSize` to the Codex node
+	// store. Default is to 64 KB.
+	chunkSize chunckSize
+
+	// onProgress is a callback function that is called after each chunk is uploaded with:
+	//   - read: the number of bytes read in the last chunk.
+	//   - total: the total number of bytes read so far.
+	//   - percent: the percentage of the total file size that has been uploaded. It is
+	//     determined from a `stat` call if it is a file and from the length of the buffer
+	// 	   if it is a buffer. Otherwise, it is 0.
+	//   - err: an error, if one occurred.
+	//
+	// If the chunk size is more than the `chunkSize` parameter, the callback is called
+	// after the block is actually stored in the block store. Otherwise, it is called
+	// after the chunk is sent to the stream.
+	onProgress onUploadProgressFunc
 }
 
 func getReaderSize(r io.Reader) int64 {
@@ -76,15 +94,7 @@ func getReaderSize(r io.Reader) int64 {
 // It returns a session ID that can be used for subsequent upload operations.
 // This function is called by UploadReader and UploadFile internally.
 // You should use this function only if you need to manage the upload session manually.
-// The options parameter contains the following fields:
-// - filepath: the full path or the name of the file to upload. The metadata such as the
-// filename and mimetype are extracted from this path / name.
-// - chunkSize: the size of each upload chunk, passed as `blockSize` to the Codex node
-// store. Default is to 64 KB.
-// - onProgress: a callback function that is called after each chunk is uploaded. If the chunk
-// size is more than the `chunkSize` parameter, the callback is called after the block is actually
-// stored in the block store. Otherwise, it is called after the chunk is sent to the stream.
-func (node CodexNode) UploadInit(options *CodexUploadOptions) (string, error) {
+func (node CodexNode) UploadInit(options *UploadOptions) (string, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
@@ -163,28 +173,12 @@ func (node CodexNode) UploadCancel(sessionId string) error {
 // It takes the upload options and the reader as parameters.
 // It returns the CID of the uploaded file or an error.
 //
-// The options parameter contains the following fields:
-// - filepath: the name of the file to upload.
-// - chunkSize: the size of each upload chunk, passed as `blockSize` to the Codex node
-// store. Default is to 64 KB.
-// - onProgress: a callback function that is called after each chunk is uploaded with:
-//   - read: the number of bytes read in the last chunk.
-//   - total: the total number of bytes read so far.
-//   - percent: the percentage of the total file size that has been uploaded. It is
-//     determined from a `stat` call if the reader is a file and from the length of the buffer
-//     if the reader is a buffer. Otherwise, it is 0.
-//   - err: an error, if one occurred.
-//
-// If the chunk size is more than the `chunkSize` parameter, the callback is called after
-// the block is actually stored in the block store. Otherwise, it is called after the chunk
-// is sent to the stream.
-//
 // Internally, it calls:
 // - UploadInit to create the upload session.
 // - UploadChunk to upload a chunk to codex.
 // - UploadFinalize to finalize the upload session.
 // - UploadCancel if an error occurs.
-func (node CodexNode) UploadReader(options CodexUploadOptions, r io.Reader) (string, error) {
+func (node CodexNode) UploadReader(options UploadOptions, r io.Reader) (string, error) {
 	sessionId, err := node.UploadInit(&options)
 	if err != nil {
 		return "", err
@@ -242,7 +236,7 @@ func (node CodexNode) UploadReader(options CodexUploadOptions, r io.Reader) (str
 }
 
 // UploadReaderAsync is the asynchronous version of UploadReader using a goroutine.
-func (node CodexNode) UploadReaderAsync(options CodexUploadOptions, r io.Reader, onDone func(cid string, err error)) {
+func (node CodexNode) UploadReaderAsync(options UploadOptions, r io.Reader, onDone func(cid string, err error)) {
 	go func() {
 		cid, err := node.UploadReader(options, r)
 		onDone(cid, err)
@@ -269,7 +263,7 @@ func (node CodexNode) UploadReaderAsync(options CodexUploadOptions, r io.Reader,
 // is sent to the stream.
 //
 // Internally, it calls UploadInit to create the upload session.
-func (node CodexNode) UploadFile(options CodexUploadOptions) (string, error) {
+func (node CodexNode) UploadFile(options UploadOptions) (string, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
@@ -317,7 +311,7 @@ func (node CodexNode) UploadFile(options CodexUploadOptions) (string, error) {
 }
 
 // UploadFileAsync is the asynchronous version of UploadFile using a goroutine.
-func (node CodexNode) UploadFileAsync(options CodexUploadOptions, onDone func(cid string, err error)) {
+func (node CodexNode) UploadFileAsync(options UploadOptions, onDone func(cid string, err error)) {
 	go func() {
 		cid, err := node.UploadFile(options)
 		onDone(cid, err)
