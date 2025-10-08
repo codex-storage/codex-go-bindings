@@ -95,6 +95,7 @@ type CodexConfig struct {
 	BlockTtl                       int       `json:"block-ttl,omitempty"`
 	BlockMaintenanceInterval       int       `json:"block-mi,omitempty"`
 	BlockMaintenanceNumberOfBlocks int       `json:"block-mn,omitempty"`
+	BlockRetries                   int       `json:"block-retries,omitempty"`
 	CacheSize                      int       `json:"cache-size,omitempty"`
 	LogFile                        string    `json:"log-file,omitempty"`
 }
