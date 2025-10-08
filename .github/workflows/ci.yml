@@ -20,14 +20,10 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build libcodex
-        if: steps.cache-libcodex.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake curl git rustc cargo
-          cargo --version
-          make update
-          make libcodex
+      - name: Install Rust 1.85.0
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.85.0
 
       - name: Record submodule commit
         run: git -C vendor/nim-codex rev-parse HEAD > vendor/nim-codex/.codex-commit
@@ -43,7 +39,7 @@ jobs:
         if: steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake curl git rustc cargo
+          sudo apt-get install -y build-essential
           make update
           CODEX_LIB_PARAMS="-d:codex_enable_api_debug_peers=true" make libcodex
 
