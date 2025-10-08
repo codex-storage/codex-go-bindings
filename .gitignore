@@ -16,3 +16,7 @@
 
 # Generated dependencies and cache
 nimcache
+
+# Test files
+codex/testdata/hello.downloaded.txt
+codex/testdata/hello.downloaded.writer.txt
