@@ -8,7 +8,8 @@ import (
 )
 
 func TestDebug(t *testing.T) {
-	codex := newCodexNode(t)
+	start := true
+	codex := newCodexNode(t, start)
 
 	info, err := codex.Debug()
 	if err != nil {

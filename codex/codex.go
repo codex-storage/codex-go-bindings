@@ -147,7 +147,6 @@ func (node CodexNode) Start() error {
 	}
 
 	_, err := bridge.wait()
-
 	return err
 }
 

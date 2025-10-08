@@ -3,15 +3,8 @@ package codex
 import "testing"
 
 func TestCodexVersion(t *testing.T) {
-	node, err := CodexNew(CodexConfig{
-		DataDir:        t.TempDir(),
-		LogFormat:      LogFormatNoColors,
-		MetricsEnabled: false,
-	})
-	if err != nil {
-		t.Fatalf("Failed to create Codex node: %v", err)
-	}
-	defer node.Destroy()
+	start := false
+	node := newCodexNode(t, start)
 
 	version, err := node.Version()
 	if err != nil {
@@ -25,15 +18,8 @@ func TestCodexVersion(t *testing.T) {
 }
 
 func TestCodexRevision(t *testing.T) {
-	node, err := CodexNew(CodexConfig{
-		DataDir:        t.TempDir(),
-		LogFormat:      LogFormatNoColors,
-		MetricsEnabled: false,
-	})
-	if err != nil {
-		t.Fatalf("Failed to create Codex node: %v", err)
-	}
-	defer node.Destroy()
+	start := false
+	node := newCodexNode(t, start)
 
 	revision, err := node.Revision()
 	if err != nil {
@@ -47,7 +33,8 @@ func TestCodexRevision(t *testing.T) {
 }
 
 func TestCodexRepo(t *testing.T) {
-	node := newCodexNode(t)
+	start := true
+	node := newCodexNode(t, start)
 
 	repo, err := node.Repo()
 	if err != nil {
@@ -61,7 +48,8 @@ func TestCodexRepo(t *testing.T) {
 }
 
 func TestSpr(t *testing.T) {
-	node := newCodexNode(t)
+	start := true
+	node := newCodexNode(t, start)
 
 	spr, err := node.Spr()
 	if err != nil {
@@ -75,7 +63,8 @@ func TestSpr(t *testing.T) {
 }
 
 func TestPeerId(t *testing.T) {
-	node := newCodexNode(t)
+	start := true
+	node := newCodexNode(t, start)
 
 	peerId, err := node.PeerId()
 	if err != nil {
