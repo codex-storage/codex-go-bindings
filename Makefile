@@ -1,8 +1,13 @@
 # Makefile for Codex Go Bindings
 
 NIM_CODEX_DIR := vendor/nim-codex
+NIM_CODEX_LIB_DIR   := $(abspath $(NIM_CODEX_DIR)/library)
+NIM_CODEX_BUILD_DIR := $(abspath $(NIM_CODEX_DIR)/build)
 
-.PHONY: all clean update build-libcodex build
+CGO_CFLAGS  := -I$(NIM_CODEX_LIB_DIR)
+CGO_LDFLAGS := -L$(NIM_CODEX_BUILD_DIR) -Wl,-rpath,$(NIM_CODEX_BUILD_DIR)
+
+.PHONY: all clean update libcodex build test
 
 all: build
 
@@ -20,7 +25,11 @@ libcodex:
 
 build:
 	@echo "Building Codex Go Bindings..."
-	go build -o codex-go codex
+	CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" go build -o codex-go ./codex
+
+test:
+	@echo "Running tests..."
+	CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" go test ./...
 
 clean:
 	@echo "Cleaning up..."

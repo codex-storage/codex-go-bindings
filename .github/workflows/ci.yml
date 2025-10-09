@@ -46,9 +46,9 @@ jobs:
       - name: Build codex go
         run: |
           cd codex
-          go build -o codex-go
+          make
 
       - name: Go test
         env:
           CGO_ENABLED: 1
-        run: go test ./...
+        run: make test
