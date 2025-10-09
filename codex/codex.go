@@ -60,6 +60,18 @@ import (
 	"unsafe"
 )
 
+type LogLevel string
+
+const (
+	TRACE  LogLevel = "trace"
+	DEBUG  LogLevel = "debug"
+	INFO   LogLevel = "info"
+	NOTICE LogLevel = "notice"
+	WARN   LogLevel = "warn"
+	ERROR  LogLevel = "error"
+	FATAL  LogLevel = "fatal"
+)
+
 type LogFormat string
 
 const (
@@ -78,26 +90,96 @@ const (
 )
 
 type CodexConfig struct {
-	LogFormat                      LogFormat `json:"log-format,omitempty"`
-	MetricsEnabled                 bool      `json:"metrics,omitempty"`
-	MetricsAddress                 string    `json:"metrics-address,omitempty"`
-	DataDir                        string    `json:"data-dir,omitempty"`
-	ListenAddrs                    []string  `json:"listen-addrs,omitempty"`
-	Nat                            string    `json:"nat,omitempty"`
-	DiscoveryPort                  int       `json:"disc-port,omitempty"`
-	NetPrivKeyFile                 string    `json:"net-privkey,omitempty"`
-	BootstrapNodes                 []string  `json:"bootstrap-node,omitempty"`
-	MaxPeers                       int       `json:"max-peers,omitempty"`
-	NumThreads                     int       `json:"num-threads,omitempty"`
-	AgentString                    string    `json:"agent-string,omitempty"`
-	RepoKind                       RepoKind  `json:"repo-kind,omitempty"`
-	StorageQuota                   int       `json:"storage-quota,omitempty"`
-	BlockTtl                       int       `json:"block-ttl,omitempty"`
-	BlockMaintenanceInterval       int       `json:"block-mi,omitempty"`
-	BlockMaintenanceNumberOfBlocks int       `json:"block-mn,omitempty"`
-	BlockRetries                   int       `json:"block-retries,omitempty"`
-	CacheSize                      int       `json:"cache-size,omitempty"`
-	LogFile                        string    `json:"log-file,omitempty"`
+	// Default: INFO
+	LogLevel LogLevel `json:"log-level,omitempty"`
+
+	// Specifies what kind of logs should be written to stdout
+	// Default: auto
+	LogFormat LogFormat `json:"log-format,omitempty"`
+
+	// Enable the metrics server
+	// Default: false
+	MetricsEnabled bool `json:"metrics,omitempty"`
+
+	// Listening address of the metrics server
+	// Default: 127.0.0.1
+	MetricsAddress string `json:"metrics-address,omitempty"`
+
+	// Listening HTTP port of the metrics server
+	// Default: 8008
+	MetricsPort int `json:"metrics-port,omitempty"`
+
+	// The directory where codex will store configuration and data
+	// Default:
+	// $HOME\AppData\Roaming\Codex on Windows
+	// $HOME/Library/Application Support/Codex on macOS
+	// $HOME/.cache/codex on Linux
+	DataDir string `json:"data-dir,omitempty"`
+
+	// Multi Addresses to listen on
+	// Default: ["/ip4/0.0.0.0/tcp/0"]
+	ListenAddrs []string `json:"listen-addrs,omitempty"`
+
+	// Specify method to use for determining public address.
+	// Must be one of: any, none, upnp, pmp, extip:<IP>
+	// Default: any
+	Nat string `json:"nat,omitempty"`
+
+	// Discovery (UDP) port
+	// Default: 8090
+	DiscoveryPort int `json:"disc-port,omitempty"`
+
+	// Source of network (secp256k1) private key file path or name
+	// Default: "key"
+	NetPrivKeyFile string `json:"net-privkey,omitempty"`
+
+	// Specifies one or more bootstrap nodes to use when connecting to the network.
+	BootstrapNodes []string `json:"bootstrap-node,omitempty"`
+
+	// The maximum number of peers to connect to.
+	// Default: 160
+	MaxPeers int `json:"max-peers,omitempty"`
+
+	// Number of worker threads (\"0\" = use as many threads as there are CPU cores available)
+	// Default: 0
+	NumThreads int `json:"num-threads,omitempty"`
+
+	// Node agent string which is used as identifier in network
+	// Default: "Codex"
+	AgentString string `json:"agent-string,omitempty"`
+
+	// Backend for main repo store (fs, sqlite, leveldb)
+	// Default: fs
+	RepoKind RepoKind `json:"repo-kind,omitempty"`
+
+	// The size of the total storage quota dedicated to the node
+	// Default: 20 GiBs
+	StorageQuota int `json:"storage-quota,omitempty"`
+
+	// Default block timeout in seconds - 0 disables the ttl
+	// Default: 30 days
+	BlockTtl int `json:"block-ttl,omitempty"`
+
+	// Time interval in seconds - determines frequency of block
+	// maintenance cycle: how often blocks are checked for expiration and cleanup
+	// Default: 10 minutes
+	BlockMaintenanceInterval int `json:"block-mi,omitempty"`
+
+	// Number of blocks to check every maintenance cycle
+	// Default: 1000
+	BlockMaintenanceNumberOfBlocks int `json:"block-mn,omitempty"`
+
+	// Number of times to retry fetching a block before giving up
+	// Default: 3000
+	BlockRetries int `json:"block-retries,omitempty"`
+
+	// The size of the block cache, 0 disables the cache -
+	// might help on slow hardrives
+	// Default: 0
+	CacheSize int `json:"cache-size,omitempty"`
+
+	// Default: "" (no log file)
+	LogFile string `json:"log-file,omitempty"`
 }
 
 type CodexNode struct {
@@ -113,11 +195,7 @@ func CodexNew(config CodexConfig) (*CodexNode, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
-	// transform BootstrapNodes into rawJSON
-	// rawJSON(fmt.Sprintf(`["%s"]`, spr))
-
 	jsonConfig, err := json.Marshal(config)
-
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +213,6 @@ func CodexNew(config CodexConfig) (*CodexNode, error) {
 }
 
 // Start starts the Codex node.
-// TODO waits for the node to be fully started,
-// by looking into the logs.
 func (node CodexNode) Start() error {
 	bridge := newBridgeCtx()
 	defer bridge.free()
