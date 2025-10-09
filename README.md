@@ -167,7 +167,7 @@ The `stream` strategy is the easiest to use.
 It provides an `onProgress` callback to receive progress updates and notify the user.
 The percentage is calculated from the `datasetSize` (taken from the manifest).
 If you don’t provide it, you can enable `datasetSizeAuto` so `DownloadStream` fetches the
-manifest and uses its `datasetSize`.
+manifest first and uses its `datasetSize`.
 
 You can pass a `write` callback and/or a `filepath` as destinations. They are not mutually exclusive,
 letting you write the content to two places for the same download.
