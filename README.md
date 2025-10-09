@@ -220,6 +220,16 @@ err := node.Fetch(cid)
 
 The `Fetch` method download remote data into your local node.
 
+### P2P
+
+You can connect to a node using the `peerId` or the `listenAddresses`:
+
+```go
+peerId := "..."
+addrs := ["..."]
+err := node1.Connect(peerId, addrs)
+```
+
 ### Debug
 
 Several methods are available to debug your node:
