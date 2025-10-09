@@ -1,0 +1,128 @@
+name: Artifacts
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: linux-amd64
+            nim_os: linux
+            nim_cpu: amd64
+            lib_ext: so
+          - os: macos-14
+            target: darwin-amd64
+            nim_os: macos
+            nim_cpu: amd64
+            lib_ext: dylib
+          - os: windows-2022
+            target: windows-amd64
+            nim_os: windows
+            nim_cpu: amd64
+            lib_ext: dll
+
+    env:
+      TARGET: ${{ matrix.target }}
+      LIB_EXT: ${{ matrix.lib_ext }}
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Set up Codex build prerequisites
+        uses: ./vendor/nim-codex/.github/actions/nimbus-build-system
+        with:
+          os: ${{ matrix.nim_os }}
+          cpu: ${{ matrix.nim_cpu }}
+          nim_version: v2.2.4
+          rust_version: 1.85.0
+
+      - name: Record submodule commit
+        run: git -C vendor/nim-codex rev-parse HEAD > vendor/nim-codex/.codex-commit
+
+      - name: Cache libcodex build
+        id: cache-libcodex
+        uses: actions/cache@v4
+        with:
+          path: vendor/nim-codex/build
+          key: ${{ runner.os }}-${{ matrix.target }}-libcodex-${{ hashFiles('vendor/nim-codex/.codex-commit') }}
+
+      - name: Build libcodex (Linux)
+        if: runner.os == 'Linux' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config
+          make update
+          make libcodex
+
+      - name: Build libcodex (macOS)
+        if: runner.os == 'macOS' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        run: |
+          brew update
+          brew install coreutils
+          make update
+          make libcodex
+
+      - name: Build libcodex (Windows)
+        if: runner.os == 'Windows' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: |
+          pacman -Sy --noconfirm make
+          make update
+          make libcodex
+
+      - name: Package artifacts (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p dist/${TARGET}
+          cp vendor/nim-codex/build/libcodex.${LIB_EXT} dist/${TARGET}/
+          cp vendor/nim-codex/library/libcodex.h dist/${TARGET}/
+          tar -czf codex-${TARGET}.tar.gz -C dist/${TARGET} .
+          echo "ARCHIVE_PATH=codex-${TARGET}.tar.gz" >> $GITHUB_ENV
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist/${TARGET}
+          for file in libcodex.dll libcodex.dll.a libcodex.lib; do
+            if [ -f "vendor/nim-codex/build/${file}" ]; then
+              cp "vendor/nim-codex/build/${file}" dist/${TARGET}/
+            fi
+          done
+          cp vendor/nim-codex/library/libcodex.h dist/${TARGET}/
+          7z a codex-${TARGET}.zip dist/${TARGET}/*
+          echo "ARCHIVE_PATH=codex-${TARGET}.zip" >> $GITHUB_ENV
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-${{ matrix.target }}
+          path: ${{ env.ARCHIVE_PATH }}
+          if-no-files-found: error
+
+  publish-release:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Create release draft
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/**/codex-*.{tar.gz,zip}
+          draft: true
