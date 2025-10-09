@@ -21,11 +21,11 @@ jobs:
             nim_os: macos
             nim_cpu: amd64
             lib_ext: so
-          # - os: windows-2022
-          #   target: windows-amd64
-          #   nim_os: windows
-          #   nim_cpu: amd64
-          #   lib_ext: dll
+          - os: windows-2022
+            target: windows-amd64
+            nim_os: windows
+            nim_cpu: amd64
+            lib_ext: dll
 
     env:
       TARGET: ${{ matrix.target }}
@@ -73,13 +73,34 @@ jobs:
           make update
           make libcodex
 
-      # - name: Build libcodex (Windows)
-      #   if: runner.os == 'Windows' && steps.cache-libcodex.outputs.cache-hit != 'true'
-      #   shell: msys2 {0}
-      #   run: |
-      #     pacman -Sy --noconfirm make
-      #     make update
-      #     make libcodex
+      - name: MSYS2 (Windows i386)
+        if: runner.os == 'Windows' && matrix.target.cpu == 'i386' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          msystem: MINGW32
+          install: >-
+            base-devel
+            git
+            mingw-w64-i686-toolchain
+
+      - name: MSYS2 (Windows amd64)
+        if: runner.os == 'Windows' && matrix.target.cpu == 'amd64' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          install: >-
+            base-devel
+            git
+            mingw-w64-x86_64-toolchain
+
+      - name: Build libcodex (Windows)
+        if: runner.os == 'Windows' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: |
+          pacman -Sy --noconfirm make
+          make update
+          make libcodex
 
       - name: Package artifacts (Linux/macOS)
         if: runner.os != 'Windows'
