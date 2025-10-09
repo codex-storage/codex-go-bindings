@@ -44,9 +44,7 @@ jobs:
           CODEX_LIB_PARAMS="-d:codex_enable_api_debug_peers=true" make libcodex
 
       - name: Build codex go
-        run: |
-          cd codex
-          make
+        run: make
 
       - name: Go test
         env:
