@@ -227,7 +227,7 @@ You can connect to a node using the `peerId` or the `listenAddresses`:
 ```go
 peerId := "..."
 addrs := ["..."]
-err := node1.Connect(peerId, addrs)
+err := node.Connect(peerId, addrs)
 ```
 
 ### Debug
