@@ -42,13 +42,10 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Set up Codex build prerequisites
-        uses: ./vendor/nim-codex/.github/actions/nimbus-build-system
+      - name: Install Rust 1.85.0
+        uses: dtolnay/rust-toolchain@master
         with:
-          os: ${{ matrix.nim_os }}
-          cpu: ${{ matrix.nim_cpu }}
-          nim_version: v2.2.4
-          rust_version: 1.85.0
+          toolchain: 1.85.0
 
       - name: Record submodule commit
         run: git -C vendor/nim-codex rev-parse HEAD > vendor/nim-codex/.codex-commit
