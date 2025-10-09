@@ -6,9 +6,11 @@ NIM_CODEX_DIR := vendor/nim-codex
 
 all: build
 
-update:
+submodules:
 	@echo "Fetching submodules..."
 	@git submodule update --init --recursive
+
+update: | submodules
 	@echo "Updating nim-codex..."
 	@$(MAKE) -C $(NIM_CODEX_DIR) update
 
@@ -18,7 +20,7 @@ libcodex:
 
 build:
 	@echo "Building Codex Go Bindings..."
-	go build -o codex-go examples/golang/codex.go
+	go build -o codex-go codex
 
 clean:
 	@echo "Cleaning up..."
