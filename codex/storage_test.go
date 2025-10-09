@@ -91,3 +91,31 @@ func TestFetchCidDoesNotExist(t *testing.T) {
 		t.Fatal("expected error when fetching non-existent manifest")
 	}
 }
+
+func TestDelete(t *testing.T) {
+	codex := newCodexNode(t)
+
+	cid, _ := uploadHelper(t, codex)
+
+	manifests, err := codex.Manifests()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(manifests) != 1 {
+		t.Fatal("expected manifests to be empty after deletion")
+	}
+
+	err = codex.Delete(cid)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	manifests, err = codex.Manifests()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(manifests) != 0 {
+		t.Fatal("expected manifests to be empty after deletion")
+	}
+}
