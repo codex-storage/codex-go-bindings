@@ -6,7 +6,7 @@ This repository provides Go bindings for the Codex library, enabling seamless in
 
 To build the required dependencies for this module, the `make` command needs to be executed.
 If you are integrating this module into another project via `go get`, ensure that you navigate
-to the `codex-go-bindings` module directory and run `make`.
+to the `codex-go-bindings` module directory and run the `make` commands.
 
 ### Steps to Install
 
@@ -53,11 +53,11 @@ The `CodexConfig` object provides several options to configure your node. You sh
 adjust the `DataDir` folder and the `BlockRetries` setting to avoid long retrieval times when
 the data is unavailable.
 
-When you are done with your node, you *have to* call `Destroy` method to free resources.
+When you are done with your node, you **have to** call `Destroy` method to free resources.
 
 ### Start / Stop
 
-use `Start` method to start your node. You *have to* call `Stop` before `Destroy` when you are done
+use `Start` method to start your node. You **have to** call `Stop` before `Destroy` when you are done
 with your node.
 
 ```go
@@ -191,8 +191,8 @@ Caveat: once started, the download cannot be cancelled.
 The `chunks` strategy allows to manage the download by yourself. It requires more code
 but provide more flexibility.
 
-This strategy *assumes you already know the total size to download* (from the manifest).
-After you believe all chunks have been retrieved, you *must* call `DownloadCancel`
+This strategy **assumes you already know the total size to download** (from the manifest).
+After you believe all chunks have been retrieved, you **must** call `DownloadCancel`
 to terminate the download session.
 
 ```go
