@@ -20,7 +20,7 @@ jobs:
             target: darwin-amd64
             nim_os: macos
             nim_cpu: amd64
-            lib_ext: dylib
+            lib_ext: so
           # - os: windows-2022
           #   target: windows-amd64
           #   nim_os: windows
