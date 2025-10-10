@@ -30,6 +30,10 @@ package codex
        return codex_stop(codexCtx, (CodexCallback) callback, resp);
    }
 
+	static int cGoCodexClose(void* codexCtx, void* resp) {
+		return codex_close(codexCtx, (CodexCallback) callback, resp);
+	}
+
    static int cGoCodexDestroy(void* codexCtx, void* resp) {
        return codex_destroy(codexCtx, (CodexCallback) callback, resp);
    }
@@ -252,11 +256,20 @@ func (node CodexNode) Destroy() error {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
+	if C.cGoCodexClose(node.ctx, bridge.resp) != C.RET_OK {
+		return bridge.callError("cGoCodexClose")
+	}
+
+	_, err := bridge.wait()
+	if err != nil {
+		return err
+	}
+
 	if C.cGoCodexDestroy(node.ctx, bridge.resp) != C.RET_OK {
 		return bridge.callError("cGoCodexDestroy")
 	}
 
-	_, err := bridge.wait()
+	_, err = bridge.wait()
 	return err
 }
 
