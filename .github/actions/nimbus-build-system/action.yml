@@ -25,13 +25,13 @@ runs:
   using: "composite"
   steps:
     - name: Rust (Linux)
-      if: inputs.os == 'linux'
+      if: inputs.os == 'ubuntu-latest'
       shell: ${{ inputs.shell }} {0}
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain=${{ inputs.rust_version }} -y
 
     - name: APT (Linux amd64/arm64)
-      if: inputs.os == 'linux' && (inputs.cpu == 'amd64' || inputs.cpu == 'arm64')
+      if: inputs.os == 'ubuntu-latest' && (inputs.cpu == 'amd64' || inputs.cpu == 'arm64')
       shell: ${{ inputs.shell }} {0}
       run: |
         sudo apt-get update -qq
@@ -39,7 +39,7 @@ runs:
           --no-install-recommends -yq lcov
 
     - name: APT (Linux i386)
-      if: inputs.os == 'linux' && inputs.cpu == 'i386'
+      if: inputs.os == 'ubuntu-latest' && inputs.cpu == 'i386'
       shell: ${{ inputs.shell }} {0}
       run: |
         sudo dpkg --add-architecture i386
@@ -48,7 +48,7 @@ runs:
           --no-install-recommends -yq gcc-multilib g++-multilib
 
     - name: Homebrew (macOS)
-      if: inputs.os == 'macos'
+      if: inputs.os == 'macos-latest'
       shell: ${{ inputs.shell }} {0}
       run: |
         brew install libomp
@@ -83,7 +83,7 @@ runs:
 
     - name: Install gcc 14 on Linux
       # We don't want to install gcc 14 for coverage (Ubuntu 20.04)
-      if : ${{ inputs.os == 'linux' && inputs.coverage != 'true' }}
+      if : ${{ inputs.os == 'ubuntu-latest' && inputs.coverage != 'true' }}
       shell: ${{ inputs.shell }} {0}
       run: |
         # Skip for older Ubuntu versions
@@ -98,7 +98,7 @@ runs:
         fi
 
     - name: Install ccache on Linux/Mac
-      if: inputs.os == 'linux' || inputs.os == 'macos'
+      if: inputs.os == 'ubuntu-latest' || inputs.os == 'macos-latest'
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         create-symlink: true
@@ -135,13 +135,13 @@ runs:
         [[ '${{ inputs.cpu }}' == 'i386' ]] && echo "ARCH_OVERRIDE=ARCH_OVERRIDE=x86" >> ${GITHUB_ENV}
 
         # Stack usage on Linux amd64/arm64
-        if [[ '${{ inputs.os }}' == 'linux' && ('${{ inputs.cpu }}' == 'amd64' || '${{ inputs.cpu }}' == 'arm64')]]; then
+        if [[ '${{ inputs.os }}' == 'ubuntu-latest' && ('${{ inputs.cpu }}' == 'amd64' || '${{ inputs.cpu }}' == 'arm64')]]; then
           NIMFLAGS="${NIMFLAGS} -d:limitStackUsage"
           echo "NIMFLAGS=${NIMFLAGS}" >> $GITHUB_ENV
         fi
 
         # Disable ADX on Linux i386
-        if [[ '${{ inputs.os }}' == 'linux' && '${{ inputs.cpu }}' == 'i386' ]]; then
+        if [[ '${{ inputs.os }}' == 'ubuntu-latest' && '${{ inputs.cpu }}' == 'i386' ]]; then
           CFLAGS="${CFLAGS} -m32 -mno-adx"
           echo "CFLAGS=${CFLAGS}" >> ${GITHUB_ENV}
           CXXFLAGS="${CXXFLAGS} -m32 -mno-adx"
@@ -174,7 +174,7 @@ runs:
         fi
 
         # Enable OpenMP on macOS
-        if [[ '${{ inputs.os }}' == 'macos' ]]; then
+        if [[ '${{ inputs.os }}' == 'macos-latest' ]]; then
           libomp_lib_dir="$(brew --prefix)/opt/libomp/lib"
           # See https://github.com/actions/virtual-environments/pull/5819
           llvm_dir="$(ls -d $(brew --prefix)/opt/llvm* | tail -1)"

@@ -10,18 +10,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu, macos, windows]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         cpu: [amd64]
         nim_version: [v2.0.14]
         rust_version: [1.79.0]
         include:
-          - os: ubuntu
+          - os: ubuntu-latest
             lib_ext: so
             shell: bash --noprofile --norc -e -o pipefail
-          - os: windows
+          - os: windows-latest
             lib_ext: dll
             shell: msys2
-          - os: macos
+          - os: macos-latest
             lib_ext: so
             shell: bash --noprofile --norc -e -o pipefail
 
@@ -61,7 +61,7 @@ jobs:
           CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
       - name: Build libcodex (macOS)
-        if: runner.os == 'macOS' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        if: runner.os == 'macos-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
           CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
@@ -103,7 +103,7 @@ jobs:
 
   # publish-release:
   #   needs: build
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-latest-22.04
   #   steps:
   #     - uses: actions/download-artifact@v4
   #       with:
