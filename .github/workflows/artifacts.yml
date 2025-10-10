@@ -58,18 +58,35 @@ jobs:
       - name: Build libcodex (Linux)
         if: runner.os == 'Linux' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
-          CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
+          CODEX_LIB_PARAMS='-d:LeopardCmakeFlags="\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release\""' make libcodex
 
       - name: Build libcodex (macOS)
-        if: runner.os == 'macos-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        if: runner.os == 'macOS' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
-          CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
+          CODEX_LIB_PARAMS='-d:LeopardCmakeFlags="\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release\""' make libcodex
+
+      - name: MSYS2 (Windows amd64)
+        if: matrix.os == 'windows-latest' && matrix.cpu == 'amd64'
+        uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          msystem: UCRT64
+          install: >-
+            base-devel
+            git
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ntldd-git
+            mingw-w64-x86_64-rust
+            mingw-w64-x86_64-toolchain
 
       - name: Build libcodex (Windows)
         if: matrix.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: |
-          CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
+          pacman -Sy --noconfirm make
+          git config --global core.symlinks false
+          make update
+          CODEX_LIB_PARAMS='-d:LeopardCmakeFlags="\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON -G \\\"Unix Makefiles\\\" -DCMAKE_BUILD_TYPE=Release\""' make libcodex
 
       - name: Package artifacts (Linux/macOS)
         if: matrix.os != 'windows-latest'
@@ -103,7 +120,7 @@ jobs:
 
   # publish-release:
   #   needs: build
-  #   runs-on: ubuntu-latest-22.04
+  #   runs-on: ubuntu-22.04
   #   steps:
   #     - uses: actions/download-artifact@v4
   #       with:
