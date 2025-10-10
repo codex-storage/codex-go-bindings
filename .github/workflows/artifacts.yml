@@ -10,26 +10,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        cpu: [amd64]
         include:
-          - os: ubuntu-22.04
-            target: linux-amd64
-            nim_os: linux
-            nim_cpu: amd64
+          - os: ubuntu-latest
             lib_ext: so
-          - os: macos-14
-            target: darwin-amd64
-            nim_os: macos
-            nim_cpu: amd64
-            lib_ext: so
-          - os: windows-2022
-            target: windows-amd64
-            nim_os: windows
-            nim_cpu: amd64
+          - os: windows-latest
             lib_ext: dll
-
-    env:
-      TARGET: ${{ matrix.target }}
-      LIB_EXT: ${{ matrix.lib_ext }}
+          - os: macos-latest
+            lib_ext: so
 
     steps:
       - name: Check out sources
@@ -55,7 +44,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vendor/nim-codex/build
-          key: ${{ runner.os }}-${{ matrix.target }}-libcodex-${{ hashFiles('vendor/nim-codex/.codex-commit') }}
+          key: ${{ runner.os }}-${{ matrix.cpu }}-libcodex-${{ hashFiles('vendor/nim-codex/.codex-commit') }}
 
       - name: Build libcodex (Linux)
         if: runner.os == 'Linux' && steps.cache-libcodex.outputs.cache-hit != 'true'
@@ -74,7 +63,7 @@ jobs:
           make libcodex
 
       - name: MSYS2 (Windows i386)
-        if: runner.os == 'windows' && matrix.target.cpu == 'i386' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        if: matrix.os == 'windows-latest' && matrix.cpu == 'i386' && steps.cache-libcodex.outputs.cache-hit != 'true'
         uses: msys2/setup-msys2@v2
         with:
           path-type: inherit
@@ -85,7 +74,7 @@ jobs:
             mingw-w64-i686-toolchain
 
       - name: MSYS2 (Windows amd64)
-        if: matrix.nim_os == 'windows' && matrix.cpu == 'amd64'
+        if: matrix.os == 'windows-latest' && matrix.cpu == 'amd64'
         uses: msys2/setup-msys2@v2
         with:
           path-type: inherit
@@ -95,7 +84,7 @@ jobs:
             mingw-w64-x86_64-toolchain
 
       - name: Build libcodex (Windows)
-        if: runner.os == 'Windows' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        if: matrix.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: |
           pacman -Sy --noconfirm make
@@ -103,32 +92,32 @@ jobs:
           make libcodex
 
       - name: Package artifacts (Linux/macOS)
-        if: runner.os != 'Windows'
+        if: matrix.os != 'windows-latest'
         run: |
-          mkdir -p dist/${TARGET}
-          cp vendor/nim-codex/build/libcodex.${LIB_EXT} dist/${TARGET}/
-          cp vendor/nim-codex/library/libcodex.h dist/${TARGET}/
-          tar -czf codex-${TARGET}.tar.gz -C dist/${TARGET} .
-          echo "ARCHIVE_PATH=codex-${TARGET}.tar.gz" >> $GITHUB_ENV
+          mkdir -p dist/${{ matrix.os }}-${{ matrix.cpu }}
+          cp vendor/nim-codex/build/libcodex.${{ matrix.lib_ext }} dist/${{ matrix.os }}-${{ matrix.cpu }}/
+          cp vendor/nim-codex/library/libcodex.h dist/${{ matrix.os }}-${{ matrix.cpu }}/
+          tar -czf codex-${{ matrix.os }}-${{ matrix.cpu }}.tar.gz -C dist/${{ matrix.os }}-${{ matrix.cpu }} .
+          echo "ARCHIVE_PATH=codex-${{ matrix.os }}-${{ matrix.cpu }}.tar.gz" >> $GITHUB_ENV
 
       - name: Package artifacts (Windows)
-        if: runner.os == 'Windows'
+        if: matrix.os == 'windows-latest'
         shell: msys2 {0}
         run: |
-          mkdir -p dist/${TARGET}
+          mkdir -p dist/${{ matrix.os }}-${{ matrix.cpu }}
           for file in libcodex.dll libcodex.dll.a libcodex.lib; do
             if [ -f "vendor/nim-codex/build/${file}" ]; then
-              cp "vendor/nim-codex/build/${file}" dist/${TARGET}/
+              cp "vendor/nim-codex/build/${file}" dist/${{ matrix.os }}-${{ matrix.cpu }}/
             fi
           done
-          cp vendor/nim-codex/library/libcodex.h dist/${TARGET}/
-          7z a codex-${TARGET}.zip dist/${TARGET}/*
-          echo "ARCHIVE_PATH=codex-${TARGET}.zip" >> $GITHUB_ENV
+          cp vendor/nim-codex/library/libcodex.h dist/${{ matrix.os }}-${{ matrix.cpu }}/
+          7z a codex-${{ matrix.os }}-${{ matrix.cpu }}.zip dist/${{ matrix.os }}-${{ matrix.cpu }}/*
+          echo "ARCHIVE_PATH=codex-${{ matrix.os }}-${{ matrix.cpu }}.zip" >> $GITHUB_ENV
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: codex-${{ matrix.target }}
+          name: codex-${{ matrix.os }}-${{ matrix.cpu }}
           path: ${{ env.ARCHIVE_PATH }}
           if-no-files-found: error
 
