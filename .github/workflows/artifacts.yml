@@ -93,8 +93,8 @@ jobs:
         run: |
           pacman -Sy --noconfirm make
           git config --global core.symlinks false
-          make QUICK_AND_DIRTY_COMPILER=1 update
-          CODEX_LIB_PARAMS='-d:LeopardCmakeFlags="-G \"Unix Makefiles\""' make libcodex
+          make update
+          make libcodex
 
       - name: Package artifacts (Linux/macOS)
         if: matrix.os != 'windows-latest'
