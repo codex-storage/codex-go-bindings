@@ -77,7 +77,8 @@ jobs:
           pacman -Sy --noconfirm make
           git config --global core.symlinks false
           make update
-          CODEX_LIB_PARAMS='-d:LeopardCmakeFlags="\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON -G \\\"Unix Makefiles\\\" -DCMAKE_BUILD_TYPE=Release\""' make libcodex
+          CODEX_LIB_PARAMS='-d:LeopardCmakeFlags="\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release\""' make libcodex
+        # CODEX_LIB_PARAMS='-d:LeopardCmakeFlags="\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON -G \\\"Unix Makefiles\\\" -DCMAKE_BUILD_TYPE=Release\""' make libcodex
 
       - name: Package artifacts (Linux/macOS)
         if: matrix.os != 'windows-latest'
