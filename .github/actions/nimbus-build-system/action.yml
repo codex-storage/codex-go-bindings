@@ -54,7 +54,7 @@ runs:
         brew install libomp
 
     - name: MSYS2 (Windows amd64)
-      if: inputs.os == 'windows' && inputs.cpu == 'amd64'
+      if: inputs.os == 'windows-latest' && inputs.cpu == 'amd64'
       uses: msys2/setup-msys2@v2
       with:
         path-type: inherit
@@ -68,7 +68,7 @@ runs:
           mingw-w64-ucrt-x86_64-rust
 
     - name: MSYS2 (Windows i386)
-      if: inputs.os == 'windows' && inputs.cpu == 'i386'
+      if: inputs.os == 'windows-latest' && inputs.cpu == 'i386'
       uses: msys2/setup-msys2@v2
       with:
         path-type: inherit
@@ -106,14 +106,14 @@ runs:
         evict-old-files: 7d
 
     - name: Install ccache on Windows
-      if: inputs.os == 'windows'
+      if: inputs.os == 'windows-latest'
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: ${{ inputs.os }}-${{ inputs.builder }}-${{ inputs.cpu }}-${{ inputs.tests }}-${{ inputs.nim_version }}
         evict-old-files: 7d
 
     - name: Enable ccache on Windows
-      if: inputs.os == 'windows'
+      if: inputs.os == 'windows-latest'
       shell: ${{ inputs.shell }} {0}
       run: |
         CCACHE_DIR=$(dirname $(which ccache))/ccached
@@ -164,7 +164,7 @@ runs:
         fi
 
         # Disable ADX on Windows i386
-        if [[ '${{ inputs.os }}' == 'windows' && '${{ inputs.cpu }}' == 'i386' ]]; then
+        if [[ '${{ inputs.os }}' == 'windows-latest' && '${{ inputs.cpu }}' == 'i386' ]]; then
           CFLAGS="${CFLAGS} -mno-adx"
           echo "CFLAGS=${CFLAGS}" >> ${GITHUB_ENV}
           CXXFLAGS="${CXXFLAGS} -mno-adx"
@@ -213,7 +213,7 @@ runs:
       run: echo "NIM_COMMIT=${{ inputs.nim_version }}" >> ${GITHUB_ENV}
 
     - name: MSYS2 (Windows All) - Disable git symbolic links (since miniupnp 2.2.5)
-      if: inputs.os == 'windows'
+      if: inputs.os == 'windows-latest'
       shell: ${{ inputs.shell }} {0}
       run: |
         git config --global core.symlinks false
