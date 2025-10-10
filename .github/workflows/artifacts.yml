@@ -93,7 +93,7 @@ jobs:
         run: |
           pacman -Sy --noconfirm make
           git config --global core.symlinks false
-          make update
+          make QUICK_AND_DIRTY_COMPILER=1 update
           make libcodex
 
       - name: Package artifacts (Linux/macOS)
