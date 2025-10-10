@@ -224,5 +224,3 @@ runs:
         which gcc
         gcc --version
         make -j${ncpu} CI_CACHE=NimBinaries ${ARCH_OVERRIDE} QUICK_AND_DIRTY_COMPILER=1 update
-        echo
-        ./env.sh nim --version
