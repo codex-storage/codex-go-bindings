@@ -12,13 +12,18 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         cpu: [amd64]
+        nim_version: [v2.0.14]
+        rust_version: [1.79.0]
         include:
           - os: ubuntu-latest
             lib_ext: so
+            shell: bash --noprofile --norc -e -o pipefail
           - os: windows-latest
             lib_ext: dll
+            shell: msys2
           - os: macos-latest
             lib_ext: so
+            shell: bash --noprofile --norc -e -o pipefail
 
     steps:
       - name: Check out sources
@@ -31,11 +36,6 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Install Rust 1.85.0
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.85.0
-
       - name: Record submodule commit
         run: git -C vendor/nim-codex rev-parse HEAD > vendor/nim-codex/.codex-commit
 
@@ -46,54 +46,29 @@ jobs:
           path: vendor/nim-codex/build
           key: ${{ runner.os }}-${{ matrix.cpu }}-libcodex-${{ hashFiles('vendor/nim-codex/.codex-commit') }}
 
+      - name: Release - Setup Nimbus Build System
+        uses: ./.github/actions/nimbus-build-system
+        with:
+          os: ${{ matrix.os }}
+          cpu: ${{ matrix.cpu }}
+          shell: ${{ matrix.shell }}
+          nim_version: ${{ matrix.nim_version }}
+          rust_version: ${{ matrix.rust_version }}
+
       - name: Build libcodex (Linux)
         if: runner.os == 'Linux' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential pkg-config
-          make update
           CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
       - name: Build libcodex (macOS)
         if: runner.os == 'macOS' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
-          brew update
-          brew install coreutils
-          make update
           CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
-
-      - name: MSYS2 (Windows i386)
-        if: matrix.os == 'windows-latest' && matrix.cpu == 'i386' && steps.cache-libcodex.outputs.cache-hit != 'true'
-        uses: msys2/setup-msys2@v2
-        with:
-          path-type: inherit
-          msystem: MINGW32
-          install: >-
-            base-devel
-            git
-            mingw-w64-i686-toolchain
-
-      - name: MSYS2 (Windows amd64)
-        if: matrix.os == 'windows-latest' && matrix.cpu == 'amd64'
-        uses: msys2/setup-msys2@v2
-        with:
-          path-type: inherit
-          msystem: UCRT64
-          install: >-
-            base-devel
-            git
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ntldd-git
-            mingw-w64-x86_64-rust
-            mingw-w64-x86_64-toolchain
 
       - name: Build libcodex (Windows)
         if: matrix.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: |
-          pacman -Sy --noconfirm make
-          git config --global core.symlinks false
-          make update
           CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
       - name: Package artifacts (Linux/macOS)
