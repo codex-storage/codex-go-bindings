@@ -52,7 +52,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends build-essential pkg-config
           make update
-          make libcodex
+          CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
       - name: Build libcodex (macOS)
         if: runner.os == 'macOS' && steps.cache-libcodex.outputs.cache-hit != 'true'
@@ -60,7 +60,7 @@ jobs:
           brew update
           brew install coreutils
           make update
-          make libcodex
+          CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
       - name: MSYS2 (Windows i386)
         if: matrix.os == 'windows-latest' && matrix.cpu == 'i386' && steps.cache-libcodex.outputs.cache-hit != 'true'
@@ -94,7 +94,7 @@ jobs:
           pacman -Sy --noconfirm make
           git config --global core.symlinks false
           make update
-          make libcodex
+          CODEX_LIB_PARAMS="-d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
       - name: Package artifacts (Linux/macOS)
         if: matrix.os != 'windows-latest'

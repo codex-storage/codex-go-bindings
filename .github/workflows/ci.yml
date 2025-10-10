@@ -41,7 +41,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential
           make update
-          CODEX_LIB_PARAMS="-d:codex_enable_api_debug_peers=true" make libcodex
+          CODEX_LIB_PARAMS="-d:codex_enable_api_debug_peers=true -d:LeopardCmakeFlags=\"-DCMAKE_POSITION_INDEPENDENT_CODE=ON\"" make libcodex
 
       - name: Build codex go
         run: make
