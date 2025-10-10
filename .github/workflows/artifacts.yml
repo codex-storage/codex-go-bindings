@@ -78,6 +78,7 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           path-type: inherit
+          msystem: UCRT64
           install: >-
             base-devel
             git
@@ -88,6 +89,7 @@ jobs:
         shell: msys2 {0}
         run: |
           pacman -Sy --noconfirm make
+          git config --global core.symlinks false
           make update
           make libcodex
 
