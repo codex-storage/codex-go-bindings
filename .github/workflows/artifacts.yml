@@ -46,15 +46,6 @@ jobs:
           path: vendor/nim-codex/build
           key: ${{ runner.os }}-${{ matrix.cpu }}-libcodex-${{ hashFiles('vendor/nim-codex/.codex-commit') }}
 
-      - name: Release - Setup Nimbus Build System
-        uses: ./.github/actions/nimbus-build-system
-        with:
-          os: ${{ matrix.os }}
-          cpu: ${{ matrix.cpu }}
-          shell: ${{ matrix.shell }}
-          nim_version: ${{ matrix.nim_version }}
-          rust_version: ${{ matrix.rust_version }}
-
       - name: Build libcodex (Linux)
         if: runner.os == 'Linux' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
