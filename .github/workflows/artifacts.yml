@@ -85,7 +85,7 @@ jobs:
             mingw-w64-i686-toolchain
 
       - name: MSYS2 (Windows amd64)
-        if: matrix.target.nim_os == 'windows' && matrix.target.cpu == 'amd64' 
+        if: matrix.nim_os == 'windows' && matrix.cpu == 'amd64'
         uses: msys2/setup-msys2@v2
         with:
           path-type: inherit
