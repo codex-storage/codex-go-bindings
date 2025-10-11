@@ -65,11 +65,11 @@ jobs:
           install: >-
             base-devel
             git
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ntldd-git
-            mingw-w64-x86_64-rust
-            mingw-w64-x86_64-toolchain
-
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ntldd-git
+            mingw-w64-ucrt-x86_64-rust
+            
       - name: Build libcodex (Windows)
         if: matrix.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         shell: msys2 {0}
