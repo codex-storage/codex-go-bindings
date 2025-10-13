@@ -93,7 +93,7 @@ const (
 	LevelDb RepoKind = "leveldb"
 )
 
-type CodexConfig struct {
+type Config struct {
 	// Default: INFO
 	LogLevel LogLevel `json:"log-level,omitempty"`
 
@@ -190,12 +190,12 @@ type CodexNode struct {
 	ctx unsafe.Pointer
 }
 
-// CodexNew creates a new Codex node with the provided configuration.
+// New creates a new Codex node with the provided configuration.
 // The node is not started automatically; you need to call CodexStart
 // to start it.
 // It returns a Codex node that can be used to interact
 // with the Codex network.
-func CodexNew(config CodexConfig) (*CodexNode, error) {
+func New(config Config) (*CodexNode, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 

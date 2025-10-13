@@ -31,7 +31,7 @@ func TestConnectWithAddress(t *testing.T) {
 		}
 	})
 
-	node1, err = CodexNew(CodexConfig{
+	node1, err = New(Config{
 		DataDir:        t.TempDir(),
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
@@ -45,7 +45,7 @@ func TestConnectWithAddress(t *testing.T) {
 		t.Fatalf("Failed to start codex1: %v", err)
 	}
 
-	node2, err = CodexNew(CodexConfig{
+	node2, err = New(Config{
 		DataDir:        t.TempDir(),
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
@@ -103,7 +103,7 @@ func TestCodexWithPeerId(t *testing.T) {
 		}
 	})
 
-	bootstrap, err = CodexNew(CodexConfig{
+	bootstrap, err = New(Config{
 		DataDir:        t.TempDir(),
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
@@ -124,7 +124,7 @@ func TestCodexWithPeerId(t *testing.T) {
 
 	bootstrapNodes := []string{spr}
 
-	node1, err = CodexNew(CodexConfig{
+	node1, err = New(Config{
 		DataDir:        t.TempDir(),
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
@@ -139,7 +139,7 @@ func TestCodexWithPeerId(t *testing.T) {
 		t.Fatalf("Failed to start codex: %v", err)
 	}
 
-	node2, err = CodexNew(CodexConfig{
+	node2, err = New(Config{
 		DataDir:        t.TempDir(),
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,

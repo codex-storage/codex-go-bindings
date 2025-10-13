@@ -28,7 +28,7 @@ func newCodexNode(t *testing.T, opts ...codexNodeTestOption) *CodexNode {
 		opt(&o)
 	}
 
-	node, err := CodexNew(CodexConfig{
+	node, err := New(Config{
 		DataDir:        t.TempDir(),
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
