@@ -1,6 +1,4 @@
-## v0.0.11 (2025-10-13)
+## v0.0.12 (2025-10-13)
 ### Notes
 
-- Fix libcodex.h path
-- Rename CodexNew to New
-- Rename CodexConfig to Config
+- Fix Rust version during build

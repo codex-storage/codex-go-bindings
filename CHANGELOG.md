@@ -1,3 +1,8 @@
+## v0.0.12 (2025-10-13)
+### Notes
+
+- Fix Rust version during build
+
 ## v0.0.11 (2025-10-13)
 ### Notes
 
