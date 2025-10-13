@@ -88,8 +88,9 @@ jobs:
         if: matrix.target.os == 'windows-latest'
         shell: msys2 {0}
         run: |
-          7z a codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip -si:libcodex.dll < vendor/nim-codex/build/libcodex.dll
-          7z a codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip -si:libcodex.h   < vendor/nim-codex/library/libcodex.h
+          ZIPFILE=codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip
+          (cd vendor/nim-codex/build && 7z a -tzip "${GITHUB_WORKSPACE}/${ZIPFILE}" libcodex.dll)
+          (cd vendor/nim-codex/library && 7z a -tzip "${GITHUB_WORKSPACE}/${ZIPFILE}" libcodex.h)
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
