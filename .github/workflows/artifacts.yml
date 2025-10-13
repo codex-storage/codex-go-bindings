@@ -2,6 +2,7 @@ name: Artifacts
 
 on:
   push:
+  workflow_dispatch:
     # tags:
     #   - 'v*'
 
@@ -48,18 +49,6 @@ jobs:
           path: vendor/nim-codex/build
           key: ${{ runner.os }}-${{ matrix.target.cpu }}-libcodex-${{ hashFiles('vendor/nim-codex/.codex-commit') }}
 
-      - name: Build libcodex (Linux)
-        if: runner.os == 'Linux' && steps.cache-libcodex.outputs.cache-hit != 'true'
-        run: |
-          make update
-          make libcodex
-
-      - name: Build libcodex (macOS)
-        if: runner.os == 'macOS' && steps.cache-libcodex.outputs.cache-hit != 'true'
-        run: |
-          make update
-          make libcodex
-
       - name: MSYS2 (Windows amd64)
         if: matrix.target.os == 'windows-latest' && matrix.target.cpu == 'amd64'
         uses: msys2/setup-msys2@v2
@@ -73,7 +62,13 @@ jobs:
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ntldd-git
             mingw-w64-ucrt-x86_64-rust
-            
+       
+      - name: Build libcodex (Linux and MacOS)
+        if: matrix.target.os != 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        run: |
+          make update
+          make libcodex
+
       - name: Build libcodex (Windows)
         if: matrix.target.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         shell: msys2 {0}
@@ -83,34 +78,13 @@ jobs:
           make update
           make libcodex
 
-      - name: Package artifacts (Linux/macOS)
-        if: matrix.target.os != 'windows-latest'
-        run: |
-          mkdir -p dist/${{ matrix.target.os }}-${{ matrix.target.cpu }}
-          cp vendor/nim-codex/build/libcodex.${{ matrix.target.lib_ext }} dist/${{ matrix.target.os }}-${{ matrix.target.cpu }}/
-          cp vendor/nim-codex/library/libcodex.h dist/${{ matrix.target.os }}-${{ matrix.target.cpu }}/
-          tar -czf codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.tar.gz -C dist/${{ matrix.target.os }}-${{ matrix.target.cpu }} .
-          echo "ARCHIVE_PATH=codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.tar.gz" >> $GITHUB_ENV
-
-      - name: Package artifacts (Windows)
-        if: matrix.target.os == 'windows-latest'
-        shell: msys2 {0}
-        run: |
-          mkdir -p dist/${{ matrix.target.os }}-${{ matrix.target.cpu }}
-          for file in libcodex.dll libcodex.dll.a libcodex.lib; do
-            if [ -f "vendor/nim-codex/build/${file}" ]; then
-              cp "vendor/nim-codex/build/${file}" dist/${{ matrix.target.os }}-${{ matrix.target.cpu }}/
-            fi
-          done
-          cp vendor/nim-codex/library/libcodex.h dist/${{ matrix.target.os }}-${{ matrix.target.cpu }}/
-          7z a codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip dist/${{ matrix.target.os }}-${{ matrix.target.cpu }}/*
-          echo "ARCHIVE_PATH=codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip" >> $GITHUB_ENV
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}
-          path: ${{ env.ARCHIVE_PATH }}
+          path: |
+            vendor/nim-codex/build/libcodex.*
+            vendor/nim-codex/library/libcodex.h
           if-no-files-found: error
 
   # publish-release:
