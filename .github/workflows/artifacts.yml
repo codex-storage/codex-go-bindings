@@ -79,24 +79,34 @@ jobs:
           make libcodex
       
       - name: Package artifacts (Linux / macOS)
-        if: matrix.target.os != 'windows-latest'
+        if: matrix.target.os == 'ubuntu-latest'
         run: |
-          if [ "$(uname)" = "Linux" ]; then sudo apt-get update && sudo apt-get install -y zip; fi
-          zip -j codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip vendor/nim-codex/build/libcodex.${{ matrix.target.lib_ext }} vendor/nim-codex/library/libcodex.h
+          sudo apt-get update && sudo apt-get install -y zip
+          ZIPFILE=codex-linux-${{ matrix.target.cpu }}.zip
+          zip -j $ZIPFILE vendor/nim-codex/build/libcodex.${{ matrix.target.lib_ext }} vendor/nim-codex/library/libcodex.h
+          echo "ZIPFILE=$ZIPFILE" >> $GITHUB_ENV
+
+      - name: Package artifacts (Linux / macOS)
+        if: matrix.target.os == 'macos-latest'
+        run: |
+          ZIPFILE=codex-macos-${{ matrix.target.cpu }}.zip
+          zip -j $ZIPFILE vendor/nim-codex/build/libcodex.${{ matrix.target.lib_ext }} vendor/nim-codex/library/libcodex.h
+          echo "ZIPFILE=$ZIPFILE" >> $GITHUB_ENV
 
       - name: Package artifacts (Windows)
         if: matrix.target.os == 'windows-latest'
         shell: msys2 {0}
         run: |
-          ZIPFILE=codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip
+          ZIPFILE=codex-windows-${{ matrix.target.cpu }}.zip
           (cd vendor/nim-codex/build && 7z a -tzip "${GITHUB_WORKSPACE}/${ZIPFILE}" libcodex.dll)
           (cd vendor/nim-codex/library && 7z a -tzip "${GITHUB_WORKSPACE}/${ZIPFILE}" libcodex.h)
+          echo "ZIPFILE=$ZIPFILE" >> $GITHUB_ENV
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}
-          path: codex-${{ matrix.target.os }}-${{ matrix.target.cpu }}.zip
+          name: ${{ env.ZIPFILE }}
+          path: ${{ env.ZIPFILE }}
           if-no-files-found: error
 
   publish-release:
