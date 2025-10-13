@@ -6,7 +6,7 @@ package codex
 
    #include <stdbool.h>
    #include <stdlib.h>
-   #include "../vendor/nim-codex/library/libcodex.h"
+   #include "libcodex.h"
 
    typedef struct {
        int ret;
