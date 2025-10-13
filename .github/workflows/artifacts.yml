@@ -2,8 +2,8 @@ name: Artifacts
 
 on:
   push:
-    tags:
-      - "v*"
+    # tags:
+    #   - "v*"
   workflow_dispatch:
 
 jobs:
@@ -39,6 +39,11 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Install Rust 1.85.0
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.85.0
+
       - name: Record submodule commit
         run: git -C vendor/nim-codex rev-parse HEAD > vendor/nim-codex/.codex-commit
 
@@ -61,7 +66,6 @@ jobs:
             mingw-w64-ucrt-x86_64-toolchain
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ntldd-git
-            mingw-w64-ucrt-x86_64-rust
        
       - name: Build libcodex (Linux and MacOS)
         if: matrix.target.os != 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
