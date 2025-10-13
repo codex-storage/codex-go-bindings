@@ -78,15 +78,15 @@ jobs:
           make update
           make libcodex
       
-      - name: Package artifacts (Linux / macOS)
-        if: matrix.target.os == 'ubuntu-latest'
+      - name: Package artifacts Linux
+        if: matrix.target.os == 'ubuntu-latest' || matrix.target.os == 'ubuntu-24.04-arm'
         run: |
           sudo apt-get update && sudo apt-get install -y zip
           ZIPFILE=codex-linux-${{ matrix.target.cpu }}.zip
           zip -j $ZIPFILE vendor/nim-codex/build/libcodex.${{ matrix.target.lib_ext }} vendor/nim-codex/library/libcodex.h
           echo "ZIPFILE=$ZIPFILE" >> $GITHUB_ENV
 
-      - name: Package artifacts (Linux / macOS)
+      - name: Package artifacts MacOS
         if: matrix.target.os == 'macos-latest'
         run: |
           ZIPFILE=codex-macos-${{ matrix.target.cpu }}.zip
