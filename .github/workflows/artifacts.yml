@@ -2,8 +2,8 @@ name: Artifacts
 
 on:
   push:
-    tags:
-      - "v*"
+    # tags:
+    #   - "v*"
   workflow_dispatch:
 
 jobs:
@@ -40,6 +40,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Install Rust 1.85.0
+        if: matrix.target.os != 'windows-latest'
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.85.0
@@ -66,6 +67,7 @@ jobs:
             mingw-w64-ucrt-x86_64-toolchain
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ntldd-git
+#            mingw-w64-ucrt-x86_64-rust
        
       - name: Build libcodex (Linux and MacOS)
         if: matrix.target.os != 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
@@ -77,6 +79,10 @@ jobs:
         if: matrix.target.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: |
+          curl -LO https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-rust-1.85.0-1-any.pkg.tar.zst
+          pacman -U  --noconfirm mingw-w64-ucrt-x86_64-rust-1.85.0-1-any.pkg.tar.zst
+          rustc --version
+          cargo --version
           pacman -Sy --noconfirm make
           git config --global core.symlinks false
           make update
