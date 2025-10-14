@@ -16,7 +16,7 @@ func TestUploadReader(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte("Hello World!"))
 	len := buf.Len()
-	cid, err := codex.UploadReader(UploadOptions{filepath: "hello.txt", onProgress: func(read, total int, percent float64, err error) {
+	cid, err := codex.UploadReader(UploadOptions{Filepath: "hello.txt", OnProgress: func(read, total int, percent float64, err error) {
 		if err != nil {
 			log.Fatalf("Error happened during upload: %v\n", err)
 		}
@@ -52,7 +52,7 @@ func TestUploadFile(t *testing.T) {
 		log.Fatalf("Error happened during file stat: %v\n", err)
 	}
 
-	options := UploadOptions{filepath: "./testdata/hello.txt", onProgress: func(read, total int, percent float64, err error) {
+	options := UploadOptions{Filepath: "./testdata/hello.txt", OnProgress: func(read, total int, percent float64, err error) {
 		if err != nil {
 			log.Fatalf("Error happened during upload: %v\n", err)
 		}
@@ -82,7 +82,7 @@ func TestUploadFile(t *testing.T) {
 func TestUploadFileNoProgress(t *testing.T) {
 	codex := newCodexNode(t)
 
-	options := UploadOptions{filepath: "./testdata/doesnt_exist.txt"}
+	options := UploadOptions{Filepath: "./testdata/doesnt_exist.txt"}
 
 	cid, err := codex.UploadFile(options)
 	if err == nil {
@@ -97,7 +97,7 @@ func TestUploadFileNoProgress(t *testing.T) {
 func TestManualUpload(t *testing.T) {
 	codex := newCodexNode(t)
 
-	sessionId, err := codex.UploadInit(&UploadOptions{filepath: "hello.txt"})
+	sessionId, err := codex.UploadInit(&UploadOptions{Filepath: "hello.txt"})
 	if err != nil {
 		log.Fatal("Error happened:", err.Error())
 	}

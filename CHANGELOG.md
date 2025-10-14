@@ -1,3 +1,9 @@
+## v0.0.14 (2025-10-14)
+### Notes
+
+- Export fields in upload and download struct
+- Fix typo
+
 ## v0.0.13 (2025-10-14)
 ### Notes
 

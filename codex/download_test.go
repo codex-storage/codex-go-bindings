@@ -19,10 +19,10 @@ func TestDownloadStream(t *testing.T) {
 	totalBytes := 0
 	finalPercent := 0.0
 	opt := DownloadStreamOptions{
-		writer:      f,
-		datasetSize: len,
-		filepath:    "testdata/hello.downloaded.writer.txt",
-		onProgress: func(read, total int, percent float64, err error) {
+		Writer:      f,
+		DatasetSize: len,
+		Filepath:    "testdata/hello.downloaded.writer.txt",
+		OnProgress: func(read, total int, percent float64, err error) {
 			if err != nil {
 				t.Fatalf("Error happening during download: %v\n", err)
 			}
@@ -61,8 +61,8 @@ func TestDownloadStreamWithAutosize(t *testing.T) {
 	totalBytes := 0
 	finalPercent := 0.0
 	opt := DownloadStreamOptions{
-		datasetSizeAuto: true,
-		onProgress: func(read, total int, percent float64, err error) {
+		DatasetSizeAuto: true,
+		OnProgress: func(read, total int, percent float64, err error) {
 			if err != nil {
 				t.Fatalf("Error happening during download: %v\n", err)
 			}
