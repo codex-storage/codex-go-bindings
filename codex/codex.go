@@ -190,6 +190,20 @@ type CodexNode struct {
 	ctx unsafe.Pointer
 }
 
+type ChunkSize int
+
+func (c ChunkSize) valOrDefault() int {
+	if c == 0 {
+		return defaultBlockSize
+	}
+
+	return int(c)
+}
+
+func (c ChunkSize) toSizeT() C.size_t {
+	return C.size_t(c.valOrDefault())
+}
+
 // New creates a new Codex node with the provided configuration.
 // The node is not started automatically; you need to call CodexStart
 // to start it.

@@ -31,58 +31,58 @@ import (
 	"unsafe"
 )
 
-type onDownloadProgressFunc func(read, total int, percent float64, err error)
+type OnDownloadProgressFunc func(read, total int, percent float64, err error)
 
 // DownloadStreamOptions is used to download a file
 // in a streaming manner in Codex.
 type DownloadStreamOptions = struct {
-	// filepath is the path destination used by DownloadStream.
+	// Filepath is the path destination used by DownloadStream.
 	// If it is set, the content will be written into the specified
 	// path.
-	filepath string
+	Filepath string
 
-	// chunkSize is the size of each downloaded chunk. Default is to 64 KB.
-	chunkSize chunckSize
+	// ChunkSize is the size of each downloaded chunk. Default is to 64 KB.
+	ChunkSize ChunkSize
 
-	// onProgress is a callback function that is called after each chunk is download with:
+	// OnProgress is a callback function that is called after each chunk is download with:
 	//   - read: the number of bytes downloaded for the last chunk.
 	//   - total: the total number of bytes downloaded so far.
 	//   - percent: the percentage of the total file size that has been downloaded. It is
 	//     determined from `datasetSize`.
 	//   - err: an error, if one occurred.
-	onProgress onDownloadProgressFunc
+	OnProgress OnDownloadProgressFunc
 
-	// writer is the path destination used by DownloadStream.
+	// Writer is the path destination used by DownloadStream.
 	// If it is set, the content will be written into the specified
-	// writer.
-	writer io.Writer
+	// Writer.
+	Writer io.Writer
 
-	// local defines the way to download the content.
+	// Local defines the way to download the content.
 	// If true, the content will be downloaded from the
-	// local node.
+	// Local node.
 	// If false (default), the content will be downloaded
 	// from the network.
-	local bool
+	Local bool
 
-	// datasetSize is the total size of the dataset being downloaded.
-	datasetSize int
+	// DatasetSize is the total size of the dataset being downloaded.
+	DatasetSize int
 
-	// datasetSizeAuto if true, will fetch the manifest before starting
+	// DatasetSizeAuto if true, will fetch the manifest before starting
 	// the downloaded to retrive the size of the data.
-	datasetSizeAuto bool
+	DatasetSizeAuto bool
 }
 
 // DownloadInitOptions is used to create a download session.
 type DownloadInitOptions = struct {
-	// local defines the way to download the content.
+	// Local defines the way to download the content.
 	// If true, the content will be downloaded from the
 	// local node.
 	// If false (default), the content will be downloaded
 	// from the network.
-	local bool
+	Local bool
 
-	// chunkSize is the size of each downloaded chunk. Default is to 64 KB.
-	chunkSize chunckSize
+	// ChunkSize is the size of each downloaded chunk. Default is to 64 KB.
+	ChunkSize ChunkSize
 }
 
 // Manifest is the object containing the information of
@@ -149,14 +149,14 @@ func (node CodexNode) DownloadStream(cid string, options DownloadStreamOptions) 
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
-	if options.datasetSizeAuto {
+	if options.DatasetSizeAuto {
 		manifest, err := node.DownloadManifest(cid)
 
 		if err != nil {
 			return err
 		}
 
-		options.datasetSize = manifest.DatasetSize
+		options.DatasetSize = manifest.DatasetSize
 	}
 
 	total := 0
@@ -165,36 +165,36 @@ func (node CodexNode) DownloadStream(cid string, options DownloadStreamOptions) 
 			return
 		}
 
-		if options.writer != nil {
-			w := options.writer
+		if options.Writer != nil {
+			w := options.Writer
 			if _, err := w.Write(chunk); err != nil {
-				if options.onProgress != nil {
-					options.onProgress(0, 0, 0.0, err)
+				if options.OnProgress != nil {
+					options.OnProgress(0, 0, 0.0, err)
 				}
 			}
 		}
 
 		total += read
 
-		if options.onProgress != nil {
+		if options.OnProgress != nil {
 			var percent = 0.0
-			if options.datasetSize > 0 {
-				percent = float64(total) / float64(options.datasetSize) * 100.0
+			if options.DatasetSize > 0 {
+				percent = float64(total) / float64(options.DatasetSize) * 100.0
 			}
 
-			options.onProgress(read, total, percent, nil)
+			options.OnProgress(read, total, percent, nil)
 		}
 	}
 
 	var cCid = C.CString(cid)
 	defer C.free(unsafe.Pointer(cCid))
 
-	var cFilepath = C.CString(options.filepath)
+	var cFilepath = C.CString(options.Filepath)
 	defer C.free(unsafe.Pointer(cFilepath))
 
-	var cLocal = C.bool(options.local)
+	var cLocal = C.bool(options.Local)
 
-	if C.cGoCodexDownloadStream(node.ctx, cCid, options.chunkSize.toSizeT(), cLocal, cFilepath, bridge.resp) != C.RET_OK {
+	if C.cGoCodexDownloadStream(node.ctx, cCid, options.ChunkSize.toSizeT(), cLocal, cFilepath, bridge.resp) != C.RET_OK {
 		return bridge.callError("cGoCodexDownloadLocal")
 	}
 
@@ -212,9 +212,9 @@ func (node CodexNode) DownloadInit(cid string, options DownloadInitOptions) erro
 	var cCid = C.CString(cid)
 	defer C.free(unsafe.Pointer(cCid))
 
-	var cLocal = C.bool(options.local)
+	var cLocal = C.bool(options.Local)
 
-	if C.cGoCodexDownloadInit(node.ctx, cCid, options.chunkSize.toSizeT(), cLocal, bridge.resp) != C.RET_OK {
+	if C.cGoCodexDownloadInit(node.ctx, cCid, options.ChunkSize.toSizeT(), cLocal, bridge.resp) != C.RET_OK {
 		return bridge.callError("cGoCodexDownloadInit")
 	}
 

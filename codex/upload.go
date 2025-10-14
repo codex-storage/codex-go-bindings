@@ -35,33 +35,19 @@ import (
 
 const defaultBlockSize = 1024 * 64
 
-type onUploadProgressFunc func(read, total int, percent float64, err error)
-
-type chunckSize int
-
-func (c chunckSize) valOrDefault() int {
-	if c == 0 {
-		return defaultBlockSize
-	}
-
-	return int(c)
-}
-
-func (c chunckSize) toSizeT() C.size_t {
-	return C.size_t(c.valOrDefault())
-}
+type OnUploadProgressFunc func(read, total int, percent float64, err error)
 
 type UploadOptions struct {
-	// filepath can be the full path when using UploadFile
+	// Filepath can be the full path when using UploadFile
 	// otherwise the file name.
 	// It is used to detect the mimetype.
-	filepath string
+	Filepath string
 
-	// chunkSize is the size of each upload chunk, passed as `blockSize` to the Codex node
+	// ChunkSize is the size of each upload chunk, passed as `blockSize` to the Codex node
 	// store. Default is to 64 KB.
-	chunkSize chunckSize
+	ChunkSize ChunkSize
 
-	// onProgress is a callback function that is called after each chunk is uploaded with:
+	// OnProgress is a callback function that is called after each chunk is uploaded with:
 	//   - read: the number of bytes read in the last chunk.
 	//   - total: the total number of bytes read so far.
 	//   - percent: the percentage of the total file size that has been uploaded. It is
@@ -72,7 +58,7 @@ type UploadOptions struct {
 	// If the chunk size is more than the `chunkSize` parameter, the callback is called
 	// after the block is actually stored in the block store. Otherwise, it is called
 	// after the chunk is sent to the stream.
-	onProgress onUploadProgressFunc
+	OnProgress OnUploadProgressFunc
 }
 
 func getReaderSize(r io.Reader) int64 {
@@ -98,10 +84,10 @@ func (node CodexNode) UploadInit(options *UploadOptions) (string, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
-	var cFilename = C.CString(options.filepath)
+	var cFilename = C.CString(options.Filepath)
 	defer C.free(unsafe.Pointer(cFilename))
 
-	if C.cGoCodexUploadInit(node.ctx, cFilename, options.chunkSize.toSizeT(), bridge.resp) != C.RET_OK {
+	if C.cGoCodexUploadInit(node.ctx, cFilename, options.ChunkSize.toSizeT(), bridge.resp) != C.RET_OK {
 		return "", bridge.callError("cGoCodexUploadInit")
 	}
 
@@ -184,11 +170,11 @@ func (node CodexNode) UploadReader(options UploadOptions, r io.Reader) (string, 
 		return "", err
 	}
 
-	buf := make([]byte, options.chunkSize.valOrDefault())
+	buf := make([]byte, options.ChunkSize.valOrDefault())
 	total := 0
 
 	var size int64
-	if options.onProgress != nil {
+	if options.OnProgress != nil {
 		size = getReaderSize(r)
 	}
 
@@ -219,16 +205,16 @@ func (node CodexNode) UploadReader(options UploadOptions, r io.Reader) (string, 
 		}
 
 		total += n
-		if options.onProgress != nil && size > 0 {
+		if options.OnProgress != nil && size > 0 {
 			percent := float64(total) / float64(size) * 100.0
 			// The last block could be a bit over the size due to padding
 			// on the chunk size.
 			if percent > 100.0 {
 				percent = 100.0
 			}
-			options.onProgress(n, total, percent, nil)
-		} else if options.onProgress != nil {
-			options.onProgress(n, total, 0, nil)
+			options.OnProgress(n, total, percent, nil)
+		} else if options.OnProgress != nil {
+			options.OnProgress(n, total, 0, nil)
 		}
 	}
 
@@ -267,8 +253,8 @@ func (node CodexNode) UploadFile(options UploadOptions) (string, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
-	if options.onProgress != nil {
-		stat, err := os.Stat(options.filepath)
+	if options.OnProgress != nil {
+		stat, err := os.Stat(options.Filepath)
 		if err != nil {
 			return "", err
 		}
@@ -290,7 +276,7 @@ func (node CodexNode) UploadFile(options UploadOptions) (string, error) {
 					percent = 100.0
 				}
 
-				options.onProgress(read, int(size), percent, nil)
+				options.OnProgress(read, int(size), percent, nil)
 			}
 		}
 	}

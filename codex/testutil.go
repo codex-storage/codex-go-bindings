@@ -65,7 +65,7 @@ func uploadHelper(t *testing.T, codex *CodexNode) (string, int) {
 
 	buf := bytes.NewBuffer([]byte("Hello World!"))
 	len := buf.Len()
-	cid, err := codex.UploadReader(UploadOptions{filepath: "hello.txt"}, buf)
+	cid, err := codex.UploadReader(UploadOptions{Filepath: "hello.txt"}, buf)
 	if err != nil {
 		t.Fatalf("Error happened during upload: %v\n", err)
 	}

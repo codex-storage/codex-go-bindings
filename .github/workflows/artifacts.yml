@@ -83,7 +83,13 @@ jobs:
           git config --global core.symlinks false
           make update
           make libcodex
-      
+
+      - name: Make sure that tests pass
+        env:
+          CGO_ENABLED: 1
+        run: make
+        run: make test
+
       - name: Package artifacts Linux
         if: matrix.target.os == 'ubuntu-latest' || matrix.target.os == 'ubuntu-24.04-arm'
         run: |
@@ -129,6 +135,5 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: ./RELEASE.md
           files: dist/**
           draft: true
