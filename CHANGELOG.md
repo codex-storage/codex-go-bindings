@@ -1,4 +1,4 @@
-## v0.0.14 (2025-10-14)
+## v0.0.15 (2025-10-14)
 ### Notes
 
 - Export fields in upload and download struct
