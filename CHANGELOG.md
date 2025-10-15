@@ -1,3 +1,8 @@
+## v0.0.17 (2025-10-15)
+### Notes
+
+- Bump nim-codex to produce dylib for macos
+
 ## v0.0.16 (2025-10-15)
 ### Notes
 
