@@ -1,3 +1,8 @@
+## v0.0.16 (2025-10-15)
+### Notes
+
+- Remove the CGO LDFLAGS flags in the source code to control them with env variables
+
 ## v0.0.15 (2025-10-14)
 ### Notes
 
