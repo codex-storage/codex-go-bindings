@@ -2,8 +2,8 @@ name: Artifacts
 
 on:
   push:
-    tags:
-      - "v*"
+    # tags:
+    #   - "v*"
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
             lib_ext: so
           
           - os: macos-latest
-            lib_ext: so
+            lib_ext: dylib
             cpu: arm64
           
           - os: windows-latest
