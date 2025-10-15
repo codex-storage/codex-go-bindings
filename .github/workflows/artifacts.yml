@@ -2,8 +2,8 @@ name: Artifacts
 
 on:
   push:
-    tags:
-      - "v*"
+    # tags:
+    #   - "v*"
   workflow_dispatch:
 
 jobs:
@@ -12,21 +12,21 @@ jobs:
     strategy:
       matrix:
         target:
-          - os: ubuntu-latest
-            cpu: amd64
-            lib_ext: so
+          # - os: ubuntu-latest
+          #   cpu: amd64
+          #   lib_ext: so
           
-          - os: ubuntu-24.04-arm
-            cpu: arm64
-            lib_ext: so
+          # - os: ubuntu-24.04-arm
+          #   cpu: arm64
+          #   lib_ext: so
           
           - os: macos-latest
             lib_ext: dylib
             cpu: arm64
           
-          - os: windows-latest
-            cpu: amd64
-            lib_ext: dll
+          # - os: windows-latest
+          #   cpu: amd64
+          #   lib_ext: dll
 
     steps:
       - name: Check out sources
@@ -73,7 +73,7 @@ jobs:
         if: matrix.target.os != 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
           make update
-          make libcodex
+          CODEX_LIB_PARAMS="--passL:\"-Wl,-install_name,@rpath/libs/libcodex.dylib\"" make libcodex
 
       - name: Build libcodex (Windows)
         if: matrix.target.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
