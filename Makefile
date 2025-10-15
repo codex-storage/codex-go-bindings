@@ -25,7 +25,7 @@ libcodex:
 
 build:
 	@echo "Building Codex Go Bindings..."
-	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" go build -o codex-go main.go
+	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" go build -o codex-go ./codex
 
 test:
 	@echo "Running tests..."
