@@ -1,9 +1,6 @@
 package codex
 
 /*
-   #cgo LDFLAGS: -L../vendor/nim-codex/build/ -lcodex
-   #cgo LDFLAGS: -L../vendor/nim-codex/ -Wl,-rpath,../vendor/nim-codex/
-
    #include "bridge.h"
    #include <stdlib.h>
 

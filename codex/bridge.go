@@ -1,9 +1,6 @@
 package codex
 
 /*
-   #cgo LDFLAGS: -L../vendor/nim-codex/build/ -lcodex
-   #cgo LDFLAGS: -L../vendor/nim-codex/ -Wl,-rpath,../vendor/nim-codex/build
-
    #include <stdbool.h>
    #include <stdlib.h>
    #include "libcodex.h"
