@@ -69,11 +69,17 @@ jobs:
             mingw-w64-ucrt-x86_64-ntldd-git
             mingw-w64-ucrt-x86_64-rust
        
-      - name: Build libcodex (Linux and MacOS)
-        if: matrix.target.os != 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
+      - name: Build libcodex (Linux)
+        if: matrix.target.lib_ext == 'so' && steps.cache-libcodex.outputs.cache-hit != 'true'
         run: |
           make update
           make libcodex
+
+      - name: Build libcodex (MacOS)
+        if: matrix.target.os == 'macos-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
+        run: |
+          make update
+          CODEX_LIB_PARAMS="--passL:\"-Wl,-install_name,@rpath/libs/libcodex.dylib\"" make libcodex
 
       - name: Build libcodex (Windows)
         if: matrix.target.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
