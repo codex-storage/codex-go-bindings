@@ -73,7 +73,7 @@ jobs:
         if: matrix.target.os != 'windows-latest'
         run: |
           make update
-          CODEX_LIB_PARAMS="--passL:\"-Wl,-install_name,@rpath/libs/libcodex.dylib\"" make libcodex
+          CODEX_LIB_PARAMS="--passL:\"-Wl,-install_name,@rpath/"" make libcodex
 
       - name: Build libcodex (Windows)
         if: matrix.target.os == 'windows-latest' && steps.cache-libcodex.outputs.cache-hit != 'true'
