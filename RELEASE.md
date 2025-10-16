@@ -4,7 +4,7 @@ This document describes the release process for the Go bindings.
 
 ## Description
 
-1. Ensure that the tests on the master are passing. The contributions should be done through PRs with tests valid as security check so it should be the case.
+1. Ensure the main branch is up-to-date and all tests are passing.
 
 2. Update the CHANGELOG.md with the description of the changes
 
