@@ -96,6 +96,8 @@ CODEX_LIB_PARAMS="-d:codex_enable_api_debug_peers=true" make libcodex
 
 Now the module is ready for use in your project.
 
+The release process is defined [here](./RELEASE.md).
+
 ## Usage
 
 ### Init
