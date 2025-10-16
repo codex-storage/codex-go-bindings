@@ -1,3 +1,23 @@
+## v0.0.21 (2025-10-15)
+### Notes
+
+- Remove libs/ from @rpath
+
+## v0.0.20 (2025-10-15)
+### Notes
+
+- Set default install_name for mac
+
+## v0.0.19 (2025-10-15)
+### Notes
+
+- Bump nim-codex
+
+## v0.0.18 (2025-10-15)
+### Notes
+
+- Bump nim-codex to specific `install_name` for macOS
+
 ## v0.0.17 (2025-10-15)
 ### Notes
 
