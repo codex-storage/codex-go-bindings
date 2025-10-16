@@ -2,13 +2,76 @@
 
 This repository provides Go bindings for the Codex library, enabling seamless integration with Go projects.
 
-## Installation
+## Usage
+
+Include in your Go project:
+
+```sh
+go get github.com/codex-storage/codex-go-bindings
+```
+
+Then the easiest way is to download our prebuilt artifacts and configure your project.
+You can use this `Makefile` (or integrates the commands in your build process):
+
+```makefile
+# Path configuration
+LIBS_DIR := $(abspath ./libs)
+CGO_CFLAGS  := -I$(LIBS_DIR)
+CGO_LDFLAGS := -L$(LIBS_DIR) -lcodex -Wl,-rpath,$(LIBS_DIR)
+
+# Fetch configuration
+OS ?= "linux"
+ARCH ?= "amd64"
+VERSION ?= "v0.0.21"
+DOWNLOAD_URL := "https://github.com/codex-storage/codex-go-bindings/releases/download/$(VERSION)/codex-${OS}-${ARCH}.zip"
+
+# Edit your binary name here
+ifeq ($(OS),Windows_NT)
+  BIN_NAME := example.exe
+else
+  BIN_NAME := example
+endif
+
+fetch:
+	@echo "Fetching libcodex from GitHub Actions from: ${DOWNLOAD_URL}"
+	@curl -fSL --create-dirs -o $(LIBS_DIR)/codex-${OS}-${ARCH}.zip ${DOWNLOAD_URL}
+	@unzip -o -qq $(LIBS_DIR)/codex-${OS}-${ARCH}.zip -d $(LIBS_DIR)
+	@rm -f $(LIBS_DIR)/*.zip
+
+build:
+	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" go build -o $(BIN_NAME) main.go
+
+clean:
+	rm -f $(BIN_NAME)
+	rm -Rf $(LIBS_DIR)/*
+```
+
+First you need to `fetch` the artefacts for your `OS` and `ARCH`:
+
+```sh
+OS=macos ARCH=arm64 make fetch
+```
+
+Then you can build your project using:
+
+```sh
+make build
+```
+
+That's it!
+
+For an example on how to use this package, please take a look at our [example-go-bindings](https://github.com/codex-storage/example-codex-go-bindings) repo.
+
+If you want to build the library yourself, you need to clone this repo and follow the instructions
+of the next step.
+
+## Development
 
 To build the required dependencies for this module, the `make` command needs to be executed.
 If you are integrating this module into another project via `go get`, ensure that you navigate
 to the `codex-go-bindings` module directory and run the `make` commands.
 
-### Steps to Install
+### Steps to install
 
 Follow these steps to install and set up the module:
 
@@ -75,10 +138,10 @@ version, err := node.Version()
 revision, err := node.Revision()
 ```
 
-Other information are available after the node is started:
+Other information is available after the node is started:
 
 ```go
-repo, err := node.Version()
+version, err := node.Version()
 spr, err := node.Spr()
 peerId, err := node.PeerId()
 ```
@@ -131,8 +194,8 @@ Caveat: once started, the upload cannot be cancelled.
 
 #### chunks
 
-The `chunks` strategy allows to manage the upload by yourself. It requires more code
-but provide more flexibility. You have to create the upload session, send the chunks
+The `chunks` strategy allows you to manage the upload by yourself. It requires more code
+but provides more flexibility. You have to create the upload session, send the chunks
 and then finalize to get the cid.
 
 ```go
@@ -146,7 +209,7 @@ cid, err := codex.UploadFinalize(sessionId)
 ```
 
 Using this strategy, you can handle resumable uploads and cancel the upload
-whenever you want !
+whenever you want!
 
 ### Download
 
@@ -169,7 +232,7 @@ The percentage is calculated from the `datasetSize` (taken from the manifest).
 If you don’t provide it, you can enable `datasetSizeAuto` so `DownloadStream` fetches the
 manifest first and uses its `datasetSize`.
 
-You can pass a `write` callback and/or a `filepath` as destinations. They are not mutually exclusive,
+You can pass a `writer` and/or a `filepath` as destinations. They are not mutually exclusive,
 letting you write the content to two places for the same download.
 
 ```go
@@ -178,7 +241,7 @@ opt := DownloadStreamOptions{
    datasetSize: len,
    filepath:    "testdata/hello.downloaded.writer.txt",
    onProgress: func(read, total int, percent float64, err error) {
-      // Do something
+      // Handle progress
    },
 }
 err := codex.DownloadStream(cid, opt)
@@ -218,7 +281,7 @@ err := node.Delete(cid)
 err := node.Fetch(cid)
 ```
 
-The `Fetch` method download remote data into your local node.
+The `Fetch` method downloads remote data into your local node.
 
 ### P2P
 
@@ -246,7 +309,3 @@ record, err := node.CodexPeerDebug(peerId)
 ```
 
 `CodexPeerDebug` is only available if you built with `-d:codex_enable_api_debug_peers=true` flag.
-
-## Example
-
-For an example on how to use this package, please take a look at our [example-go-bindings](https://github.com/codex-storage/example-codex-go-bindings) repo.
