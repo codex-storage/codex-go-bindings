@@ -1,6 +1,7 @@
 package codex
 
 import (
+	"context"
 	"os"
 	"strings"
 	"testing"
@@ -32,7 +33,7 @@ func TestDownloadStream(t *testing.T) {
 		},
 	}
 
-	if err := codex.DownloadStream(cid, opt); err != nil {
+	if err := codex.DownloadStream(context.Background(), cid, opt); err != nil {
 		t.Fatal("Error happened:", err.Error())
 	}
 
@@ -72,7 +73,7 @@ func TestDownloadStreamWithAutosize(t *testing.T) {
 		},
 	}
 
-	if err := codex.DownloadStream(cid, opt); err != nil {
+	if err := codex.DownloadStream(context.Background(), cid, opt); err != nil {
 		t.Fatal("Error happened:", err.Error())
 	}
 
@@ -89,8 +90,32 @@ func TestDownloadStreamWithNotExisting(t *testing.T) {
 	codex := newCodexNode(t, withBlockRetries(1))
 
 	opt := DownloadStreamOptions{}
-	if err := codex.DownloadStream("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", opt); err == nil {
+	if err := codex.DownloadStream(context.Background(), "bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", opt); err == nil {
 		t.Fatal("Error expected when downloading non-existing cid")
+	}
+}
+
+func TestDownloadStreamCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	codex := newCodexNode(t)
+	cid, _ := uploadBigFileHelper(t, codex)
+
+	channelError := make(chan error, 1)
+	go func() {
+		err := codex.DownloadStream(ctx, cid, DownloadStreamOptions{Local: true})
+		channelError <- err
+	}()
+
+	cancel()
+	err := <-channelError
+
+	if err == nil {
+		t.Fatal("UploadFile should have been canceled")
+	}
+
+	if err.Error() != "Failed to stream file: Stream EOF!" {
+		t.Fatalf("UploadFile returned unexpected error: %v", err)
 	}
 }
 

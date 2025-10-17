@@ -26,7 +26,9 @@ package codex
 */
 import "C"
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"unsafe"
 )
@@ -145,7 +147,7 @@ func (node CodexNode) DownloadManifest(cid string) (Manifest, error) {
 // If options.writer is set, the data will be written into that writer.
 // The options filepath and writer are not mutually exclusive, i.e you can write
 // in different places in a same call.
-func (node CodexNode) DownloadStream(cid string, options DownloadStreamOptions) error {
+func (node CodexNode) DownloadStream(ctx context.Context, cid string, options DownloadStreamOptions) error {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
@@ -189,6 +191,14 @@ func (node CodexNode) DownloadStream(cid string, options DownloadStreamOptions) 
 	var cCid = C.CString(cid)
 	defer C.free(unsafe.Pointer(cCid))
 
+	err := node.DownloadInit(cid, DownloadInitOptions{
+		ChunkSize: options.ChunkSize,
+		Local:     options.Local,
+	})
+	if err != nil {
+		return err
+	}
+
 	var cFilepath = C.CString(options.Filepath)
 	defer C.free(unsafe.Pointer(cFilepath))
 
@@ -198,8 +208,24 @@ func (node CodexNode) DownloadStream(cid string, options DownloadStreamOptions) 
 		return bridge.callError("cGoCodexDownloadLocal")
 	}
 
-	_, err := bridge.wait()
-	return err
+	var cancelErr error
+	select {
+	case <-ctx.Done():
+		cancelErr = node.DownloadCancel(cid)
+	default:
+		// continue
+	}
+
+	_, err = bridge.wait()
+
+	if err != nil {
+		if cancelErr != nil {
+			return fmt.Errorf("upload canceled: %v, but failed to cancel upload session: %v", ctx.Err(), cancelErr)
+		}
+		return err
+	}
+
+	return nil
 }
 
 // DownloadInit initializes the download process for a specific CID.
