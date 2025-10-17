@@ -174,8 +174,6 @@ onProgress := func(read, total int, percent float64, err error) {
 cid, err := codex.UploadReader(UploadOptions{filepath: "hello.txt", onProgress: onProgress}, buf)
 ```
 
-Caveat: once started, the upload cannot be cancelled.
-
 #### file
 
 The `file` strategy allows you to upload a file on Codex using the path.
@@ -191,8 +189,6 @@ onProgress := func(read, total int, percent float64, err error) {
 }
 cid, err := codex.UploadFile(UploadOptions{filepath: "./testdata/hello.txt", onProgress: onProgress})
 ```
-
-Caveat: once started, the upload cannot be cancelled.
 
 #### chunks
 
@@ -248,8 +244,6 @@ opt := DownloadStreamOptions{
 }
 err := codex.DownloadStream(cid, opt)
 ```
-
-Caveat: once started, the download cannot be cancelled.
 
 #### chunks
 
