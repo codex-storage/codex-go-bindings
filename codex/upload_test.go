@@ -45,7 +45,6 @@ func TestUploadReader(t *testing.T) {
 
 func TestUploadReaderCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	codex := newCodexNode(t)
 	buf := bytes.NewBuffer(make([]byte, 1024*1024*10))
@@ -107,10 +106,8 @@ func TestUploadFile(t *testing.T) {
 
 func TestUploadFileCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	// create a tmp file with large content
-	tmpFile, err := os.Create("./testdata/large_file.txt")
+	tmpFile, err := os.Create(os.TempDir() + "/large_file.txt")
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -126,8 +123,8 @@ func TestUploadFileCancel(t *testing.T) {
 
 	channelError := make(chan error, 1)
 	go func() {
-		_, e := codex.UploadFile(ctx, UploadOptions{Filepath: tmpFile.Name()})
-		channelError <- e
+		_, err := codex.UploadFile(ctx, UploadOptions{Filepath: tmpFile.Name()})
+		channelError <- err
 	}()
 
 	cancel()
