@@ -98,7 +98,7 @@ Now the module is ready for use in your project.
 
 The release process is defined [here](./RELEASE.md).
 
-## Usage
+## API
 
 ### Init
 
@@ -308,3 +308,9 @@ record, err := node.CodexPeerDebug(peerId)
 ```
 
 `CodexPeerDebug` is only available if you built with `-d:codex_enable_api_debug_peers=true` flag.
+
+### Context and cancellation
+
+Go contexts are exposed only on the long-running operations as `UploadReader`, `UploadFile`, and `DownloadFile`. If the
+context is cancelled, those methods cancel the active upload or download. Short lived API calls don’t take a context
+because they usually finish before a cancellation signal could matter.
