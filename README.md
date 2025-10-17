@@ -98,7 +98,7 @@ Now the module is ready for use in your project.
 
 The release process is defined [here](./RELEASE.md).
 
-## Usage
+## API
 
 ### Init
 
@@ -171,10 +171,9 @@ buf := bytes.NewBuffer([]byte("Hello World!"))
 onProgress := func(read, total int, percent float64, err error) {
    // Do something with the data
 }
-cid, err := codex.UploadReader(UploadOptions{filepath: "hello.txt", onProgress: onProgress}, buf)
+ctx := context.Background()
+cid, err := codex.UploadReader(ctx, UploadOptions{filepath: "hello.txt", onProgress: onProgress}, buf)
 ```
-
-Caveat: once started, the upload cannot be cancelled.
 
 #### file
 
@@ -189,10 +188,9 @@ The `UploadFile` returns the cid of the content uploaded.
 onProgress := func(read, total int, percent float64, err error) {
    // Do something with the data
 }
-cid, err := codex.UploadFile(UploadOptions{filepath: "./testdata/hello.txt", onProgress: onProgress})
+ctx := context.Background()
+cid, err := codex.UploadFile(ctx, UploadOptions{filepath: "./testdata/hello.txt", onProgress: onProgress})
 ```
-
-Caveat: once started, the upload cannot be cancelled.
 
 #### chunks
 
@@ -246,10 +244,9 @@ opt := DownloadStreamOptions{
       // Handle progress
    },
 }
-err := codex.DownloadStream(cid, opt)
+ctx := context.Background()
+err := codex.DownloadStream(ctx, cid, opt)
 ```
-
-Caveat: once started, the download cannot be cancelled.
 
 #### chunks
 
@@ -311,3 +308,9 @@ record, err := node.CodexPeerDebug(peerId)
 ```
 
 `CodexPeerDebug` is only available if you built with `-d:codex_enable_api_debug_peers=true` flag.
+
+### Context and cancellation
+
+Go contexts are exposed only on the long-running operations as `UploadReader`, `UploadFile`, and `DownloadFile`. If the
+context is cancelled, those methods cancel the active upload or download. Short lived API calls don’t take a context
+because they usually finish before a cancellation signal could matter.

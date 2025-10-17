@@ -1,7 +1,8 @@
 {
     "go.toolsEnvVars": {
+        "CGO_ENABLED": "1",
         "CGO_CFLAGS": "-I${workspaceFolder}/vendor/nim-codex/library",
-        "CGO_LDFLAGS": "-L${workspaceFolder}/vendor/nim-codex/build -Wl,-rpath,${workspaceFolder}/vendor/nim-codex/build",
+        "CGO_LDFLAGS": "-L${workspaceFolder}/vendor/nim-codex/build -lcodex -Wl,-rpath,${workspaceFolder}/vendor/nim-codex/build",
         "LD_LIBRARY_PATH": "${workspaceFolder}/vendor/nim-codex/build:${env:LD_LIBRARY_PATH}"
     }
 }
