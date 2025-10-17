@@ -34,6 +34,7 @@ func newCodexNode(t *testing.T, opts ...codexNodeTestOption) *CodexNode {
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
 		BlockRetries:   o.blockRetries,
+		LogLevel:       INFO,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create Codex node: %v", err)
@@ -43,6 +44,11 @@ func newCodexNode(t *testing.T, opts ...codexNodeTestOption) *CodexNode {
 		err = node.Start()
 		if err != nil {
 			t.Fatalf("Failed to start Codex node: %v", err)
+		}
+
+		err := node.UpdateLogLevel("INFO")
+		if err != nil {
+			t.Fatalf("Failed to set log level: %v", err)
 		}
 	}
 
@@ -66,6 +72,20 @@ func uploadHelper(t *testing.T, codex *CodexNode) (string, int) {
 
 	buf := bytes.NewBuffer([]byte("Hello World!"))
 	len := buf.Len()
+	cid, err := codex.UploadReader(context.Background(), UploadOptions{Filepath: "hello.txt"}, buf)
+	if err != nil {
+		t.Fatalf("Error happened during upload: %v\n", err)
+	}
+
+	return cid, len
+}
+
+func uploadBigFileHelper(t *testing.T, codex *CodexNode) (string, int) {
+	t.Helper()
+
+	len := 1024 * 1024 * 50
+	buf := bytes.NewBuffer(make([]byte, len))
+
 	cid, err := codex.UploadReader(context.Background(), UploadOptions{Filepath: "hello.txt"}, buf)
 	if err != nil {
 		t.Fatalf("Error happened during upload: %v\n", err)
