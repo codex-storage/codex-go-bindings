@@ -44,11 +44,6 @@ func newCodexNode(t *testing.T, opts ...codexNodeTestOption) *CodexNode {
 		if err != nil {
 			t.Fatalf("Failed to start Codex node: %v", err)
 		}
-
-		err := node.UpdateLogLevel("INFO")
-		if err != nil {
-			t.Fatalf("Failed to set log level: %v", err)
-		}
 	}
 
 	t.Cleanup(func() {
