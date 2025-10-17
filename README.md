@@ -171,7 +171,8 @@ buf := bytes.NewBuffer([]byte("Hello World!"))
 onProgress := func(read, total int, percent float64, err error) {
    // Do something with the data
 }
-cid, err := codex.UploadReader(UploadOptions{filepath: "hello.txt", onProgress: onProgress}, buf)
+ctx := context.Background()
+cid, err := codex.UploadReader(ctx, UploadOptions{filepath: "hello.txt", onProgress: onProgress}, buf)
 ```
 
 #### file
@@ -187,7 +188,8 @@ The `UploadFile` returns the cid of the content uploaded.
 onProgress := func(read, total int, percent float64, err error) {
    // Do something with the data
 }
-cid, err := codex.UploadFile(UploadOptions{filepath: "./testdata/hello.txt", onProgress: onProgress})
+ctx := context.Background()
+cid, err := codex.UploadFile(ctx, UploadOptions{filepath: "./testdata/hello.txt", onProgress: onProgress})
 ```
 
 #### chunks
@@ -242,7 +244,8 @@ opt := DownloadStreamOptions{
       // Handle progress
    },
 }
-err := codex.DownloadStream(cid, opt)
+ctx := context.Background()
+err := codex.DownloadStream(ctx, cid, opt)
 ```
 
 #### chunks
