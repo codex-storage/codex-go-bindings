@@ -2,6 +2,7 @@ package codex
 
 import (
 	"bytes"
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -16,7 +17,7 @@ func TestUploadReader(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte("Hello World!"))
 	len := buf.Len()
-	cid, err := codex.UploadReader(UploadOptions{Filepath: "hello.txt", OnProgress: func(read, total int, percent float64, err error) {
+	cid, err := codex.UploadReader(context.Background(), UploadOptions{Filepath: "hello.txt", OnProgress: func(read, total int, percent float64, err error) {
 		if err != nil {
 			log.Fatalf("Error happened during upload: %v\n", err)
 		}
@@ -42,6 +43,31 @@ func TestUploadReader(t *testing.T) {
 	}
 }
 
+func TestUploadReaderCancel(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	codex := newCodexNode(t)
+	buf := bytes.NewBuffer(make([]byte, 1024*1024*10))
+
+	channelErr := make(chan error, 1)
+	go func() {
+		_, e := codex.UploadReader(ctx, UploadOptions{Filepath: "hello.txt"}, buf)
+		channelErr <- e
+	}()
+
+	cancel()
+	err := <-channelErr
+
+	if err == nil {
+		t.Fatal("UploadReader should have been canceled")
+	}
+
+	if err.Error() != "upload canceled" {
+		t.Fatalf("UploadReader returned unexpected error: %v", err)
+	}
+}
+
 func TestUploadFile(t *testing.T) {
 	codex := newCodexNode(t)
 	totalBytes := 0
@@ -61,7 +87,7 @@ func TestUploadFile(t *testing.T) {
 		finalPercent = percent
 	}}
 
-	cid, err := codex.UploadFile(options)
+	cid, err := codex.UploadFile(context.Background(), options)
 	if err != nil {
 		t.Fatalf("UploadReader failed: %v", err)
 	}
@@ -79,12 +105,49 @@ func TestUploadFile(t *testing.T) {
 	}
 }
 
+func TestUploadFileCancel(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// create a tmp file with large content
+	tmpFile, err := os.Create("./testdata/large_file.txt")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	largeContent := make([]byte, 1024*1024*50)
+	if _, err := tmpFile.Write(largeContent); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
+	tmpFile.Close()
+
+	codex := newCodexNode(t)
+
+	channelError := make(chan error, 1)
+	go func() {
+		_, e := codex.UploadFile(ctx, UploadOptions{Filepath: tmpFile.Name()})
+		channelError <- e
+	}()
+
+	cancel()
+	err = <-channelError
+
+	if err == nil {
+		t.Fatal("UploadFile should have been canceled")
+	}
+
+	if err.Error() != "Failed to upload the file: Failed to stream the file: Stream Closed!" {
+		t.Fatalf("UploadFile returned unexpected error: %v", err)
+	}
+}
+
 func TestUploadFileNoProgress(t *testing.T) {
 	codex := newCodexNode(t)
 
 	options := UploadOptions{Filepath: "./testdata/doesnt_exist.txt"}
 
-	cid, err := codex.UploadFile(options)
+	cid, err := codex.UploadFile(context.Background(), options)
 	if err == nil {
 		t.Fatalf("UploadReader should have failed")
 	}

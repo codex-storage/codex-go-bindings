@@ -27,6 +27,8 @@ package codex
 import "C"
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -164,7 +166,7 @@ func (node CodexNode) UploadCancel(sessionId string) error {
 // - UploadChunk to upload a chunk to codex.
 // - UploadFinalize to finalize the upload session.
 // - UploadCancel if an error occurs.
-func (node CodexNode) UploadReader(options UploadOptions, r io.Reader) (string, error) {
+func (node CodexNode) UploadReader(ctx context.Context, options UploadOptions, r io.Reader) (string, error) {
 	sessionId, err := node.UploadInit(&options)
 	if err != nil {
 		return "", err
@@ -179,6 +181,16 @@ func (node CodexNode) UploadReader(options UploadOptions, r io.Reader) (string, 
 	}
 
 	for {
+		select {
+		case <-ctx.Done():
+			if cancelErr := node.UploadCancel(sessionId); cancelErr != nil {
+				return "", fmt.Errorf("upload canceled: %v, but failed to cancel upload session: %v", ctx.Err(), cancelErr)
+			}
+			return "", errors.New("upload canceled")
+		default:
+			// continue
+		}
+
 		n, err := r.Read(buf)
 		if err == io.EOF {
 			break
@@ -222,9 +234,9 @@ func (node CodexNode) UploadReader(options UploadOptions, r io.Reader) (string, 
 }
 
 // UploadReaderAsync is the asynchronous version of UploadReader using a goroutine.
-func (node CodexNode) UploadReaderAsync(options UploadOptions, r io.Reader, onDone func(cid string, err error)) {
+func (node CodexNode) UploadReaderAsync(ctx context.Context, options UploadOptions, r io.Reader, onDone func(cid string, err error)) {
 	go func() {
-		cid, err := node.UploadReader(options, r)
+		cid, err := node.UploadReader(ctx, options, r)
 		onDone(cid, err)
 	}()
 }
@@ -249,7 +261,7 @@ func (node CodexNode) UploadReaderAsync(options UploadOptions, r io.Reader, onDo
 // is sent to the stream.
 //
 // Internally, it calls UploadInit to create the upload session.
-func (node CodexNode) UploadFile(options UploadOptions) (string, error) {
+func (node CodexNode) UploadFile(ctx context.Context, options UploadOptions) (string, error) {
 	bridge := newBridgeCtx()
 	defer bridge.free()
 
@@ -293,13 +305,29 @@ func (node CodexNode) UploadFile(options UploadOptions) (string, error) {
 		return "", bridge.callError("cGoCodexUploadFile")
 	}
 
-	return bridge.wait()
+	var cancelErr error
+	select {
+	case <-ctx.Done():
+		cancelErr = node.UploadCancel(sessionId)
+	default:
+		// continue
+	}
+
+	_, err = bridge.wait()
+	if err != nil {
+		if cancelErr != nil {
+			return "", fmt.Errorf("upload canceled: %v, but failed to cancel upload session: %v", ctx.Err(), cancelErr)
+		}
+		return "", err
+	}
+
+	return bridge.result, nil
 }
 
 // UploadFileAsync is the asynchronous version of UploadFile using a goroutine.
-func (node CodexNode) UploadFileAsync(options UploadOptions, onDone func(cid string, err error)) {
+func (node CodexNode) UploadFileAsync(ctx context.Context, options UploadOptions, onDone func(cid string, err error)) {
 	go func() {
-		cid, err := node.UploadFile(options)
+		cid, err := node.UploadFile(ctx, options)
 		onDone(cid, err)
 	}()
 }
