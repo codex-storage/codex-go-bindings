@@ -305,15 +305,27 @@ func (node CodexNode) UploadFile(ctx context.Context, options UploadOptions) (st
 		return "", bridge.callError("cGoCodexUploadFile")
 	}
 
-	var cancelErr error
-	select {
-	case <-ctx.Done():
-		cancelErr = node.UploadCancel(sessionId)
-	default:
-		// continue
-	}
+	done := make(chan struct{})
+	channelError := make(chan error, 1)
+	go func() {
+		select {
+		case <-ctx.Done():
+			channelError <- node.UploadCancel(sessionId)
+		case <-done:
+			// Nothing to do, upload finished
+		}
+	}()
 
 	_, err = bridge.wait()
+	close(done)
+
+	// Extract the potential cancellation error
+	var cancelErr error
+	select {
+	case cancelErr = <-channelError:
+	default:
+	}
+
 	if err != nil {
 		if cancelErr != nil {
 			return "", fmt.Errorf("upload canceled: %v, but failed to cancel upload session: %v", ctx.Err(), cancelErr)

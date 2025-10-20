@@ -208,20 +208,32 @@ func (node CodexNode) DownloadStream(ctx context.Context, cid string, options Do
 		return bridge.callError("cGoCodexDownloadLocal")
 	}
 
-	var cancelErr error
-	select {
-	case <-ctx.Done():
-		cancelErr = node.DownloadCancel(cid)
-	default:
-		// continue
-	}
+	done := make(chan struct{})
+	channelError := make(chan error, 1)
+	go func() {
+		select {
+		case <-ctx.Done():
+			channelError <- node.DownloadCancel(cid)
+		case <-done:
+			// Nothing to do, download finished
+		}
+	}()
 
 	_, err = bridge.wait()
+	close(done)
+
+	// Extract the potential cancellation error
+	var cancelError error
+	select {
+	case cancelError = <-channelError:
+	default:
+	}
 
 	if err != nil {
-		if cancelErr != nil {
-			return fmt.Errorf("upload canceled: %v, but failed to cancel upload session: %v", ctx.Err(), cancelErr)
+		if cancelError != nil {
+			return fmt.Errorf("download canceled: %v, but failed to cancel download session: %v", ctx.Err(), cancelError)
 		}
+
 		return err
 	}
 
