@@ -1,3 +1,8 @@
+## v0.0.22 (2025-10-20)
+### Notes
+
+- Downgrade Go version requirement to 1.24.0
+
 ## v0.0.21 (2025-10-15)
 ### Notes
 
