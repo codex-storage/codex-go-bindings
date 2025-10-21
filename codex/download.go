@@ -199,6 +199,8 @@ func (node CodexNode) DownloadStream(ctx context.Context, cid string, options Do
 		return err
 	}
 
+	defer node.DownloadCancel(cid)
+
 	var cFilepath = C.CString(options.Filepath)
 	defer C.free(unsafe.Pointer(cFilepath))
 
