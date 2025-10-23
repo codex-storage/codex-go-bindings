@@ -305,7 +305,11 @@ func (node CodexNode) UploadFile(ctx context.Context, options UploadOptions) (st
 		return "", bridge.callError("cGoCodexUploadFile")
 	}
 
+	// Create a done channel to signal the goroutine to stop
+	// when the download is complete and avoid goroutine leaks.
 	done := make(chan struct{})
+	defer close(done)
+
 	channelError := make(chan error, 1)
 	go func() {
 		select {
@@ -317,7 +321,6 @@ func (node CodexNode) UploadFile(ctx context.Context, options UploadOptions) (st
 	}()
 
 	_, err = bridge.wait()
-	close(done)
 
 	// Extract the potential cancellation error
 	var cancelErr error

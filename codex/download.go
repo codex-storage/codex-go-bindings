@@ -210,7 +210,11 @@ func (node CodexNode) DownloadStream(ctx context.Context, cid string, options Do
 		return bridge.callError("cGoCodexDownloadLocal")
 	}
 
+	// Create a done channel to signal the goroutine to stop
+	// when the download is complete and avoid goroutine leaks.
 	done := make(chan struct{})
+	defer close(done)
+
 	channelError := make(chan error, 1)
 	go func() {
 		select {
@@ -222,7 +226,6 @@ func (node CodexNode) DownloadStream(ctx context.Context, cid string, options Do
 	}()
 
 	_, err = bridge.wait()
-	close(done)
 
 	// Extract the potential cancellation error
 	var cancelError error
