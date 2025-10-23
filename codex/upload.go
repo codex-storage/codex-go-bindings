@@ -333,7 +333,7 @@ func (node CodexNode) UploadFile(ctx context.Context, options UploadOptions) (st
 		return "", err
 	}
 
-	return bridge.result, nil
+	return bridge.result, cancelErr
 }
 
 // UploadFileAsync is the asynchronous version of UploadFile using a goroutine.

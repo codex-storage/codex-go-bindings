@@ -239,7 +239,7 @@ func (node CodexNode) DownloadStream(ctx context.Context, cid string, options Do
 		return err
 	}
 
-	return nil
+	return cancelError
 }
 
 // DownloadInit initializes the download process for a specific CID.
