@@ -171,6 +171,7 @@ func (node CodexNode) UploadReader(ctx context.Context, options UploadOptions, r
 	if err != nil {
 		return "", err
 	}
+	defer node.UploadCancel(sessionId)
 
 	buf := make([]byte, options.ChunkSize.valOrDefault())
 	total := 0
@@ -297,6 +298,7 @@ func (node CodexNode) UploadFile(ctx context.Context, options UploadOptions) (st
 	if err != nil {
 		return "", err
 	}
+	defer node.UploadCancel(sessionId)
 
 	var cSessionId = C.CString(sessionId)
 	defer C.free(unsafe.Pointer(cSessionId))
