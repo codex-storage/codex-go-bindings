@@ -87,7 +87,7 @@ func TestDownloadStreamWithAutosize(t *testing.T) {
 }
 
 func TestDownloadStreamWithNotExisting(t *testing.T) {
-	codex := newCodexNode(t, withBlockRetries(1))
+	codex := newCodexNode(t, Config{BlockRetries: 1})
 
 	opt := DownloadStreamOptions{}
 	if err := codex.DownloadStream(context.Background(), "bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", opt); err == nil {
@@ -159,7 +159,7 @@ func TestDownloadManifest(t *testing.T) {
 }
 
 func TestDownloadManifestWithNotExistingCid(t *testing.T) {
-	codex := newCodexNode(t, withBlockRetries(1))
+	codex := newCodexNode(t, Config{BlockRetries: 1})
 
 	manifest, err := codex.DownloadManifest("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku")
 	if err == nil {
@@ -172,7 +172,7 @@ func TestDownloadManifestWithNotExistingCid(t *testing.T) {
 }
 
 func TestDownloadInitWithNotExistingCid(t *testing.T) {
-	codex := newCodexNode(t, withBlockRetries(1))
+	codex := newCodexNode(t, Config{BlockRetries: 1})
 
 	if err := codex.DownloadInit("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", DownloadInitOptions{}); err == nil {
 		t.Fatal("expected error when initializing download for non-existent cid")
