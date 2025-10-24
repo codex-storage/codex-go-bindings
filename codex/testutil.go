@@ -34,6 +34,7 @@ func newCodexNode(t *testing.T, opts ...codexNodeTestOption) *CodexNode {
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
 		BlockRetries:   o.blockRetries,
+		LogLevel:       "ERROR",
 	})
 	if err != nil {
 		t.Fatalf("Failed to create Codex node: %v", err)
