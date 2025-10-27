@@ -20,3 +20,6 @@ nimcache
 # Test files
 codex/testdata/hello.downloaded.txt
 codex/testdata/hello.downloaded.writer.txt
+
+# Bin
+codex-go
