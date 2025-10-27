@@ -35,6 +35,14 @@ func newCodexNode(t *testing.T, opts ...Config) *CodexNode {
 		if c.LogFile != "" {
 			config.LogFile = c.LogFile
 		}
+
+		if len(c.BootstrapNodes) != 0 {
+			config.BootstrapNodes = c.BootstrapNodes
+		}
+
+		if c.DiscoveryPort != 0 {
+			config.DiscoveryPort = c.DiscoveryPort
+		}
 	}
 
 	node, err := New(config)
