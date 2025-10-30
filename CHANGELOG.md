@@ -1,3 +1,14 @@
+## v0.0.24 (2025-10-30)
+### Notes
+
+- Return the standard context.Canceled when a context is cancelled
+
+## v0.0.23 (2025-10-30)
+### Notes
+
+- Add context cancellation support
+- Prevent segmentation fault when trying to stop and node not started
+
 ## v0.0.22 (2025-10-20)
 ### Notes
 
