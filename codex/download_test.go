@@ -111,11 +111,11 @@ func TestDownloadStreamCancelled(t *testing.T) {
 	err := <-channelError
 
 	if err == nil {
-		t.Fatal("UploadFile should have been canceled")
+		t.Fatal("DownloadStream should have been canceled")
 	}
 
-	if err.Error() != "Failed to stream file: Stream EOF!" {
-		t.Fatalf("UploadFile returned unexpected error: %v", err)
+	if err.Error() != context.Canceled.Error() {
+		t.Fatalf("DownloadStream returned unexpected error: %v", err)
 	}
 }
 

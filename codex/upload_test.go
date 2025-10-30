@@ -62,8 +62,8 @@ func TestUploadReaderCancel(t *testing.T) {
 		t.Fatal("UploadReader should have been canceled")
 	}
 
-	if err.Error() != "upload canceled" {
-		t.Fatalf("UploadReader returned unexpected error: %v", err)
+	if err.Error() != context.Canceled.Error() {
+		t.Fatalf("UploadReader returned unexpected error: %v expected %v", err, context.Canceled)
 	}
 }
 
@@ -134,7 +134,7 @@ func TestUploadFileCancel(t *testing.T) {
 		t.Fatal("UploadFile should have been canceled")
 	}
 
-	if err.Error() != "Failed to upload the file: Failed to stream the file: Stream Closed!" {
+	if err.Error() != context.Canceled.Error() {
 		t.Fatalf("UploadFile returned unexpected error: %v", err)
 	}
 }
