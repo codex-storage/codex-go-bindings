@@ -32,38 +32,19 @@ func TestUpdateLogLevel(t *testing.T) {
 	}
 	defer os.Remove(tmpFile.Name())
 
-	node, err := New(Config{
-		LogFile:        tmpFile.Name(),
-		MetricsEnabled: false,
+	node := newCodexNode(t, Config{
+		LogLevel:  "INFO",
+		LogFile:   tmpFile.Name(),
+		LogFormat: LogFormatNoColors,
 	})
-	if err != nil {
-		t.Fatalf("Failed to create Codex node: %v", err)
-	}
-
-	t.Cleanup(func() {
-		if err := node.Stop(); err != nil {
-			t.Logf("cleanup codex: %v", err)
-		}
-
-		if err := node.Destroy(); err != nil {
-			t.Logf("cleanup codex: %v", err)
-		}
-	})
-
-	if err := node.Start(); err != nil {
-		t.Fatalf("Failed to start Codex node: %v", err)
-	}
 
 	content, err := os.ReadFile(tmpFile.Name())
+
 	if err != nil {
 		t.Fatalf("Failed to read log file: %v", err)
 	}
-	if !strings.Contains(string(content), "Started codex node") {
-		t.Errorf("Log file does not contain 'Started codex node' %s", string(content))
-	}
-
-	if err := node.Stop(); err != nil {
-		t.Fatalf("Failed to stop Codex node: %v", err)
+	if !strings.Contains(string(content), "INF") {
+		t.Errorf("Log file does not contain INFO statement %s", string(content))
 	}
 
 	err = node.UpdateLogLevel("ERROR")
@@ -71,6 +52,11 @@ func TestUpdateLogLevel(t *testing.T) {
 		t.Fatalf("UpdateLogLevel call failed: %v", err)
 	}
 
+	if err := node.Stop(); err != nil {
+		t.Fatalf("Failed to stop Codex node: %v", err)
+	}
+
+	// Clear the file
 	if err := os.WriteFile(tmpFile.Name(), []byte{}, 0644); err != nil {
 		t.Fatalf("Failed to clear log file: %v", err)
 	}
@@ -85,8 +71,8 @@ func TestUpdateLogLevel(t *testing.T) {
 		t.Fatalf("Failed to read log file: %v", err)
 	}
 
-	if strings.Contains(string(content), "Starting discovery node") {
-		t.Errorf("Log file contains 'Starting discovery node'")
+	if strings.Contains(string(content), "INF") {
+		t.Errorf("Log file contains INFO statement after log level update: %s", string(content))
 	}
 }
 
@@ -94,49 +80,9 @@ func TestCodexPeerDebug(t *testing.T) {
 	var bootstrap, node1, node2 *CodexNode
 	var err error
 
-	t.Cleanup(func() {
-		if bootstrap != nil {
-			if err := bootstrap.Stop(); err != nil {
-				t.Logf("cleanup bootstrap: %v", err)
-			}
-
-			if err := bootstrap.Destroy(); err != nil {
-				t.Logf("cleanup bootstrap: %v", err)
-			}
-		}
-		if node1 != nil {
-			if err := node1.Stop(); err != nil {
-				t.Logf("cleanup node1: %v", err)
-			}
-
-			if err := node1.Destroy(); err != nil {
-				t.Logf("cleanup node1: %v", err)
-			}
-		}
-		if node2 != nil {
-			if err := node2.Stop(); err != nil {
-				t.Logf("cleanup node2: %v", err)
-			}
-
-			if err := node2.Destroy(); err != nil {
-				t.Logf("cleanup node2: %v", err)
-			}
-		}
+	bootstrap = newCodexNode(t, Config{
+		DiscoveryPort: 8092,
 	})
-
-	bootstrap, err = New(Config{
-		DataDir:        t.TempDir(),
-		LogFormat:      LogFormatNoColors,
-		MetricsEnabled: false,
-		DiscoveryPort:  8092,
-	})
-	if err != nil {
-		t.Fatalf("Failed to create bootstrap: %v", err)
-	}
-
-	if err := bootstrap.Start(); err != nil {
-		t.Fatalf("Failed to start bootstrap: %v", err)
-	}
 
 	spr, err := bootstrap.Spr()
 	if err != nil {
@@ -145,35 +91,15 @@ func TestCodexPeerDebug(t *testing.T) {
 
 	bootstrapNodes := []string{spr}
 
-	node1, err = New(Config{
-		DataDir:        t.TempDir(),
-		LogFormat:      LogFormatNoColors,
-		MetricsEnabled: false,
+	node1 = newCodexNode(t, Config{
 		DiscoveryPort:  8090,
 		BootstrapNodes: bootstrapNodes,
 	})
-	if err != nil {
-		t.Fatalf("Failed to create codex: %v", err)
-	}
 
-	if err := node1.Start(); err != nil {
-		t.Fatalf("Failed to start codex: %v", err)
-	}
-
-	node2, err = New(Config{
-		DataDir:        t.TempDir(),
-		LogFormat:      LogFormatNoColors,
-		MetricsEnabled: false,
+	node2 = newCodexNode(t, Config{
 		DiscoveryPort:  8091,
 		BootstrapNodes: bootstrapNodes,
 	})
-	if err != nil {
-		t.Fatalf("Failed to create codex2: %v", err)
-	}
-
-	if err := node2.Start(); err != nil {
-		t.Fatalf("Failed to start codex2: %v", err)
-	}
 
 	peerId, err := node2.PeerId()
 	if err != nil {
@@ -186,7 +112,12 @@ func TestCodexPeerDebug(t *testing.T) {
 		if err == nil {
 			break
 		}
+
 		time.Sleep(1 * time.Second)
+	}
+
+	if err != nil {
+		t.Fatalf("CodexPeerDebug call failed: %v", err)
 	}
 
 	if record.PeerId == "" {

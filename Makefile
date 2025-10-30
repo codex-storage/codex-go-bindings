@@ -29,7 +29,7 @@ build:
 
 test:
 	@echo "Running tests..."
-	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" go test ./...
+	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" GOTESTFLAGS="-timeout=2m" go test ./...
 
 clean:
 	@echo "Cleaning up..."

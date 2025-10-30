@@ -3,7 +3,11 @@ package codex
 import "testing"
 
 func TestCodexVersion(t *testing.T) {
-	node := newCodexNode(t, withNoStart())
+	config := defaultConfigHelper(t)
+	node, err := New(config)
+	if err != nil {
+		t.Fatalf("Failed to create Codex node: %v", err)
+	}
 
 	version, err := node.Version()
 	if err != nil {
@@ -17,7 +21,11 @@ func TestCodexVersion(t *testing.T) {
 }
 
 func TestCodexRevision(t *testing.T) {
-	node := newCodexNode(t, withNoStart())
+	config := defaultConfigHelper(t)
+	node, err := New(config)
+	if err != nil {
+		t.Fatalf("Failed to create Codex node: %v", err)
+	}
 
 	revision, err := node.Revision()
 	if err != nil {

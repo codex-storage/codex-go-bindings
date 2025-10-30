@@ -84,7 +84,7 @@ func TestFetch(t *testing.T) {
 }
 
 func TestFetchCidDoesNotExist(t *testing.T) {
-	codex := newCodexNode(t, withBlockRetries(1))
+	codex := newCodexNode(t, Config{BlockRetries: 1})
 
 	_, err := codex.Fetch("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku")
 	if err == nil {
