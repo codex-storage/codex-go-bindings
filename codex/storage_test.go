@@ -119,3 +119,30 @@ func TestDelete(t *testing.T) {
 		t.Fatal("expected manifests to be empty after deletion")
 	}
 }
+
+func TestExists(t *testing.T) {
+	codex := newCodexNode(t)
+
+	cid, _ := uploadHelper(t, codex)
+
+	exists, err := codex.Exists(cid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists {
+		t.Fatal("expected cid to exist")
+	}
+
+	err = codex.Delete(cid)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	exists, err = codex.Exists(cid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exists {
+		t.Fatal("expected cid to not exist after deletion")
+	}
+}
