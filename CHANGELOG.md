@@ -1,3 +1,8 @@
+## v0.0.26 (2025-11-03)
+### Notes
+
+-  Bump `nim-codex` to prototype release branch
+
 ## v0.0.25 (2025-11-03)
 ### Notes
 
