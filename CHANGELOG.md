@@ -1,3 +1,8 @@
+## v0.0.25 (2025-11-03)
+### Notes
+
+- Add `exists` to check the existence of a cid in the local store
+
 ## v0.0.24 (2025-10-30)
 ### Notes
 
