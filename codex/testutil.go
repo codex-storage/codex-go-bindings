@@ -15,6 +15,7 @@ func defaultConfigHelper(t *testing.T) Config {
 		MetricsEnabled: false,
 		BlockRetries:   3000,
 		LogLevel:       "ERROR",
+		Nat:            "none",
 	}
 }
 
