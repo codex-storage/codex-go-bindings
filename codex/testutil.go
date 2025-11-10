@@ -15,6 +15,7 @@ func defaultConfigHelper(t *testing.T) Config {
 		MetricsEnabled: false,
 		BlockRetries:   3000,
 		LogLevel:       "ERROR",
+		Nat:            "none",
 	}
 }
 
@@ -42,6 +43,11 @@ func newCodexNode(t *testing.T, opts ...Config) *CodexNode {
 
 		if c.DiscoveryPort != 0 {
 			config.DiscoveryPort = c.DiscoveryPort
+		}
+
+		// in case someone wants to change the config.Nat default value
+		if c.Nat != "" {
+			config.Nat = c.Nat
 		}
 	}
 

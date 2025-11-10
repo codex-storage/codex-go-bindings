@@ -21,7 +21,7 @@ update: | submodules
 
 libcodex:
 	@echo "Building libcodex..."
-	@$(MAKE) -C $(NIM_CODEX_DIR) libcodex
+	@$(MAKE) -C $(NIM_CODEX_DIR) libcodex CODEX_LIB_PARAMS="-d:codex_enable_api_debug_peers"
 
 build:
 	@echo "Building Codex Go Bindings..."
@@ -30,6 +30,14 @@ build:
 test:
 	@echo "Running tests..."
 	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" GOTESTFLAGS="-timeout=2m" go test ./...
+
+test2:
+	@echo "Running tests..."
+	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" GOTESTFLAGS="-timeout=2m" gotestsum --packages="./..." -f testname -- -count 1 -run TestConnectWithAddress
+
+test3:
+	@echo "Running tests..."
+	CGO_ENABLED=1 CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS)" GOTESTFLAGS="-timeout=2m" gotestsum --packages="./..." -f testname -- -count 1
 
 clean:
 	@echo "Cleaning up..."
