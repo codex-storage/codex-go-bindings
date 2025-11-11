@@ -1,3 +1,9 @@
+## v0.0.27 (2025-11-11)
+### Notes
+
+- Enhance release note in
+- Bump nim-codex to prototype release branch
+
 ## v0.0.26 (2025-11-03)
 ### Notes
 
