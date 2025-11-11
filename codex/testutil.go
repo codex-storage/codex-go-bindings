@@ -14,7 +14,6 @@ func defaultConfigHelper(t *testing.T) Config {
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
 		BlockRetries:   3000,
-		LogLevel:       "TRACE",
 		Nat:            "none",
 	}
 }
