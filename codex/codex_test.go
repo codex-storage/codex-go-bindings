@@ -79,3 +79,13 @@ func TestPeerId(t *testing.T) {
 
 	t.Logf("Codex PeerId: %s", peerId)
 }
+
+func TestStorageQuota(t *testing.T) {
+	node := newCodexNode(t, Config{
+		StorageQuota: 1024 * 1024 * 1024, // 1GB
+	})
+
+	if node == nil {
+		t.Fatal("expected codex node to be created")
+	}
+}
