@@ -1,6 +1,8 @@
 package codex
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCodexVersion(t *testing.T) {
 	config := defaultConfigHelper(t)
@@ -87,5 +89,35 @@ func TestStorageQuota(t *testing.T) {
 
 	if node == nil {
 		t.Fatal("expected codex node to be created")
+	}
+}
+
+func TestCreateAndDestroyMultipleInstancesWithSameDatadir(t *testing.T) {
+	datadir := t.TempDir()
+
+	config := Config{
+		DataDir:        datadir,
+		LogFormat:      LogFormatNoColors,
+		MetricsEnabled: false,
+		BlockRetries:   5,
+	}
+
+	for range 2 {
+		node, err := New(config)
+		if err != nil {
+			t.Fatalf("Failed to create Codex node: %v", err)
+		}
+
+		if err := node.Start(); err != nil {
+			t.Fatalf("Failed to start Codex node: %v", err)
+		}
+
+		if err := node.Stop(); err != nil {
+			t.Fatalf("Failed to stop Codex node: %v", err)
+		}
+
+		if err := node.Destroy(); err != nil {
+			t.Fatalf("Failed to stop Codex node after restart: %v", err)
+		}
 	}
 }
