@@ -121,3 +121,33 @@ func TestCreateAndDestroyMultipleInstancesWithSameDatadir(t *testing.T) {
 		}
 	}
 }
+
+func TestNumThreads(t *testing.T) {
+	node := newCodexNode(t, Config{
+		NumThreads: 1,
+	})
+
+	if node == nil {
+		t.Fatal("expected codex node to be created")
+	}
+}
+
+func TestBlockTtl(t *testing.T) {
+	node := newCodexNode(t, Config{
+		BlockTtl: "10H",
+	})
+
+	if node == nil {
+		t.Fatal("expected codex node to be created")
+	}
+}
+
+func TestBlockMaintenanceInterval(t *testing.T) {
+	node := newCodexNode(t, Config{
+		BlockMaintenanceInterval: "10H",
+	})
+
+	if node == nil {
+		t.Fatal("expected codex node to be created")
+	}
+}
