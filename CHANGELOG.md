@@ -1,3 +1,9 @@
+## v0.0.28 (2025-11-14)
+### Notes
+
+- fix: bump nim codex to prevent datastore lock when closing the Codex client
+- fix: configuration duration for block-ttl, block-mi and int for num-threads
+
 ## v0.0.27 (2025-11-11)
 ### Notes
 
