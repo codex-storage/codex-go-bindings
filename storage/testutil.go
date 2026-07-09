@@ -40,6 +40,22 @@ func newStorageNode(t *testing.T, opts ...Config) *StorageNode {
 			config.BootstrapNodes = c.BootstrapNodes
 		}
 
+		if c.NoBootstrapNode {
+			config.NoBootstrapNode = true
+		}
+
+		if c.MixEnabled {
+			config.MixEnabled = true
+		}
+
+		if len(c.DhtMixProxies) != 0 {
+			config.DhtMixProxies = c.DhtMixProxies
+		}
+
+		if c.MixPoolJson != "" {
+			config.MixPoolJson = c.MixPoolJson
+		}
+
 		if c.DiscoveryPort != 0 {
 			config.DiscoveryPort = c.DiscoveryPort
 		}
