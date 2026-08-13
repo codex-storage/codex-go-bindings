@@ -14,7 +14,7 @@ func defaultConfigHelper(t *testing.T) Config {
 		LogFormat:      LogFormatNoColors,
 		MetricsEnabled: false,
 		BlockRetries:   3000,
-		Nat:            "none",
+		Nat:            "extip:127.0.0.1",
 	}
 }
 
@@ -38,6 +38,22 @@ func newStorageNode(t *testing.T, opts ...Config) *StorageNode {
 
 		if len(c.BootstrapNodes) != 0 {
 			config.BootstrapNodes = c.BootstrapNodes
+		}
+
+		if c.NoBootstrapNode {
+			config.NoBootstrapNode = true
+		}
+
+		if c.MixEnabled {
+			config.MixEnabled = true
+		}
+
+		if len(c.DhtMixProxies) != 0 {
+			config.DhtMixProxies = c.DhtMixProxies
+		}
+
+		if c.MixPoolJson != "" {
+			config.MixPoolJson = c.MixPoolJson
 		}
 
 		if c.DiscoveryPort != 0 {
